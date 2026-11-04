@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 巨头现金流追踪 | Vesper X</title>
+<meta name="description" content="微软、谷歌、Meta、亚马逊、甲骨文的资本开支、自由现金流、未起租租赁承诺与订单积压，按日历季度对齐，数据来自 SEC 文件，每季财报后更新。">
+<meta name="keywords" content="AI 资本开支, capex, 自由现金流, 微软, 谷歌, 亚马逊, Meta, 甲骨文, hyperscaler, AI capex tracker, free cash flow, RPO">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI 巨头现金流追踪 | Vesper X">
+<meta property="og:description" content="五家 AI 巨头的资本开支、自由现金流和看不见的租赁承诺，数据来自 SEC 文件，每季更新。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@Vespr_x">
+<meta property="og:url" content="https://vesperxboard.github.io/AI-cashflowboard/">
+<link rel="canonical" href="https://vesperxboard.github.io/AI-cashflowboard/">
+<meta property="og:image" content="https://vesperxboard.github.io/AI-cashflowboard/og.png">
+<meta name="twitter:image" content="https://vesperxboard.github.io/AI-cashflowboard/og.png">
+<style>
+:root {
+  color-scheme: light;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --serif: "Iowan Old Style", "Charter", "Georgia", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --paper: #ffffff;
+  --ink: #12202f;        /* 主文字 */
+  --ink-2: #4b5866;      /* 次文字 */
+  --muted: #7d8793;      /* 轴、注释 */
+  --rule: #0f2742;       /* 深海军蓝，标题线 */
+  --hair: #e4e7eb;       /* 发丝线 */
+  --grid: #eef0f2;
+  --ctx: #d9dee3;        /* 小多图里其他公司的背景线 */
+  --wash: rgba(15,39,66,.045);
+  /* 公司颜色取自各自品牌主色，微调明度后过了相邻色盲与对比度校验（白底）。
+     堆叠顺序 MSFT、GOOGL、META、AMZN、ORCL，保证两种蓝不相邻、绿和橙不相邻。 */
+  --c-MSFT: #2b8fd6;   /* Microsoft 蓝 */
+  --c-GOOGL: #2f9e4f;  /* Google 绿（蓝、红、黄已被其他公司占用） */
+  --c-META: #1f4fbf;   /* Meta 蓝，比 Microsoft 深一档 */
+  --c-AMZN: #d98a1c;   /* Amazon 橙 */
+  --c-ORCL: #c74634;   /* Oracle 红 */
+  --s6: #5b7083; --s7: #9a7b4f; --s8: #7a5ea8;   /* 以后新增公司的备用色 */
+  --neg: #b0413e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+body { font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+a { color: inherit; }
+.page { max-width: 1120px; margin: 0 auto; padding: 0 32px 56px; border-top: 4px solid var(--rule); }
+
+/* 报头 */
+.mast { padding: 34px 0 22px; border-bottom: 1px solid var(--hair); display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.kicker { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--rule); font-weight: 600; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: 36px; line-height: 1.15; margin: 8px 0 8px; letter-spacing: .005em; }
+.dek { color: var(--ink-2); font-size: 15px; max-width: 640px; margin: 0; }
+.mast .side { text-align: right; color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+.mast .side b { color: var(--ink); font-weight: 600; }
+
+/* 控件 */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 28px; padding: 14px 0; border-bottom: 1px solid var(--hair); font-size: 13px; }
+.controls .lab { color: var(--muted); margin-right: 8px; font-size: 12px; letter-spacing: .04em; }
+.toggles { display: inline-flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.tog { font: inherit; background: none; border: 0; padding: 3px 0; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; border-bottom: 1px solid transparent; }
+.tog .sw { width: 9px; height: 9px; border-radius: 2px; }
+.tog[aria-pressed="false"] { color: var(--muted); }
+.tog[aria-pressed="false"] .sw { background: var(--ctx) !important; }
+.tog:hover { border-bottom-color: var(--hair); }
+select { font: inherit; font-size: 13px; color: var(--ink); background: transparent; border: 0; border-bottom: 1px solid var(--hair); padding: 2px 18px 2px 2px; border-radius: 0; cursor: pointer; }
+.linkbtn { font: inherit; font-size: 12.5px; background: none; border: 0; color: var(--s1); cursor: pointer; padding: 0; }
+.tog:focus-visible, select:focus-visible, .linkbtn:focus-visible, .chart:focus-visible, summary:focus-visible { outline: 2px solid var(--s1); outline-offset: 3px; }
+
+/* 要点 */
+.kpis { display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr; border-bottom: 1px solid var(--hair); }
+.kpi { padding: 22px 22px 20px; border-left: 1px solid var(--hair); min-width: 0; }
+.kpi:first-child { border-left: 0; padding-left: 0; }
+.kpi .l { color: var(--ink-2); font-size: 12.5px; }
+.kpi .v { font-size: 30px; font-weight: 600; letter-spacing: -.01em; margin-top: 6px; line-height: 1.1; }
+.kpi.hero .v { font-size: 48px; color: var(--rule); }
+.kpi .s { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+/* 图块 */
+.exhibit { padding: 34px 0 26px; border-bottom: 1px solid var(--hair); }
+.ex-num { font-size: 11.5px; letter-spacing: .14em; color: var(--rule); font-weight: 600; text-transform: uppercase; }
+.ex-title { font-family: var(--serif); font-size: 22px; font-weight: 600; line-height: 1.3; margin: 6px 0 4px; }
+.ex-sub { color: var(--ink-2); font-size: 13px; margin: 0 0 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12.5px; color: var(--ink-2); margin: 0 0 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.foot { margin-top: 12px; font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+.foot b { font-weight: 600; color: var(--ink-2); }
+.chart { position: relative; outline: none; }
+.chart svg { display: block; overflow: visible; }
+.empty { color: var(--muted); font-size: 13px; padding: 36px 0; }
+
+.multiples { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px 22px; }
+.panel { min-width: 0; }
+.panel .ph { display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid var(--ink); padding-top: 6px; margin-bottom: 2px; }
+.panel .ph .n { font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.panel .ph .n i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.panel .ph .x { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.panel .ph .x.neg { color: var(--neg); }
+.panel .pq { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+
+svg text { font-family: var(--sans); }
+.tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.gridline { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+.zero { stroke: #b9c0c8; stroke-width: 1; shape-rendering: crispEdges; }
+.cross { stroke: #9aa3ad; stroke-width: 1; shape-rendering: crispEdges; }
+.band-h { fill: var(--wash); }
+.dlabel { fill: var(--ink-2); font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* 热力表 */
+.heat { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 12px; table-layout: fixed; }
+.heat th { font-weight: 500; color: var(--muted); font-size: 11px; padding: 4px 2px; text-align: center; }
+.heat th.co { text-align: left; color: var(--ink); font-size: 12.5px; font-weight: 600; width: 72px; }
+.heat td { height: 30px; text-align: center; font-variant-numeric: tabular-nums; border-radius: 3px; cursor: default; }
+.heat td.na { color: var(--muted); background: transparent; }
+.scale { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 10px; }
+.scale .bar { width: 180px; height: 8px; border-radius: 4px; }
+
+/* 数据表 */
+.tbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-bottom: 10px; font-size: 13px; }
+.twrap { overflow-x: auto; }
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.data th { text-align: right; font-weight: 600; color: var(--ink); padding: 8px 10px; border-bottom: 2px solid var(--ink); white-space: nowrap; font-size: 12.5px; }
+table.data td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--hair); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data td.na { color: #b3bac2; }
+table.data td a { text-decoration: none; border-bottom: 1px dotted #b3bac2; }
+table.data td a:hover { border-bottom-color: var(--ink); }
+table.data .neg { color: var(--neg); }
+table.data th i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; }
+table.data td.txt { text-align: left; white-space: normal; color: var(--ink-2); min-width: 260px; max-width: 460px; }
+
+details { margin-top: 18px; }
+summary { cursor: pointer; font-size: 13px; color: var(--ink); font-weight: 600; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "+"; display: inline-block; width: 16px; color: var(--muted); }
+details[open] summary::before { content: "−"; }
+
+.notes { padding: 30px 0 0; }
+.notes h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+.notes ol { margin: 0; padding-left: 20px; color: var(--ink-2); font-size: 13px; }
+.notes li { margin: 4px 0; }
+.colophon { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--hair); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 12px; }
+
+.tip { position: absolute; pointer-events: none; z-index: 20; background: #fff; border: 1px solid var(--hair); border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; min-width: 140px; box-shadow: 0 8px 24px rgba(15,39,66,.12); display: none; }
+.tip .h { color: var(--ink-2); margin-bottom: 4px; font-size: 11.5px; }
+.tip .r { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.tip .r i { width: 12px; height: 2px; border-radius: 1px; flex: none; }
+.tip .r b { font-weight: 600; color: var(--ink); min-width: 56px; font-variant-numeric: tabular-nums; }
+.tip .r span { color: var(--ink-2); }
+.tip .r.t { border-top: 1px solid var(--hair); margin-top: 4px; padding-top: 4px; }
+
+@media (max-width: 960px) {
+  .multiples { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi.hero { grid-column: 1 / -1; padding-left: 0; }
+  .kpi:nth-child(2), .kpi:nth-child(4) { border-left: 0; padding-left: 0; }
+  .kpi { border-top: 1px solid var(--hair); }
+  .kpi.hero { border-top: 0; }
+}
+@media (max-width: 600px) {
+  .page { padding: 0 16px 40px; }
+  h1 { font-size: 27px; }
+  .mast .side { text-align: left; }
+  .multiples { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; }
+  .kpi .v { font-size: 24px; }
+  .kpi.hero .v { font-size: 40px; }
+  .kpi { padding: 16px 12px; }
+  .ex-title { font-size: 19px; }
+  .heat { font-size: 11px; }
+}
+
+/* 关注、要点、工具栏、水印、提示 */
+.follow { display: inline-block; margin-top: 10px; font-size: 12.5px; color: var(--rule); text-decoration: none; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 12px; font-weight: 600; }
+.follow:hover { background: var(--rule); color: #fff; }
+.highlights { padding: 26px 0 22px; border-bottom: 1px solid var(--hair); }
+.highlights ol { margin: 10px 0 0; padding-left: 22px; font-size: 15.5px; line-height: 1.7; }
+.highlights li { margin: 2px 0; }
+.highlights li::marker { color: var(--rule); font-weight: 600; }
+.hl-by { color: var(--muted); font-size: 12px; margin-top: 8px; }
+.exhibit { position: relative; scroll-margin-top: 16px; }
+.ex-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 22px; }
+.tools { display: flex; gap: 14px; font-size: 12px; }
+.tools button, .tools a { font: inherit; font-size: 12px; background: none; border: 0; padding: 0; color: var(--ink-2); cursor: pointer; text-decoration: none; border-bottom: 1px solid transparent; }
+.tools button:hover, .tools a:hover { color: var(--rule); border-bottom-color: var(--rule); }
+.tools button:focus-visible, .tools a:focus-visible, .follow:focus-visible { outline: 2px solid var(--s1); outline-offset: 3px; }
+.foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.foot .wm { flex: none; color: var(--ink-2); font-weight: 600; letter-spacing: .02em; }
+.panel .pn { font-size: 11.5px; color: var(--ink-2); margin: 2px 0 0; min-height: 17px; }
+.exporting .tools { visibility: hidden; }
+.exhibit.exporting { padding-top: 0; padding-bottom: 0; border-bottom: 0; }
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--rule); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 30; }
+.toast.on { opacity: 1; }
+.guide-gap.over { color: var(--neg); }
+#guide td.guide-cell { white-space: normal; }
+#guide .gv { font-variant-numeric: tabular-nums; }
+#guide .gd { color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.45; }
+#guide .nw { white-space: nowrap; }
+#guide td:nth-child(2), #guide th:nth-child(2), #guide td:nth-child(3), #guide th:nth-child(3) { text-align: left; }
+#guide td.guide-cell { min-width: 200px; }
+/* 分享卡片：?og=1 时只显示这一块，1200×630 */
+#og-card { display: none; }
+body.og-mode .page, body.og-mode .toast { display: none !important; }
+body.og-mode { margin: 0; background: #fff; }
+body.og-mode #og-card { display: flex; flex-direction: column; width: 1200px; height: 630px; box-sizing: border-box; padding: 0 72px 48px; border-top: 10px solid var(--rule); }
+#og-card .ok { margin-top: 52px; font: 600 15px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--rule); }
+#og-card .ot { margin-top: 18px; font: 600 58px/1.1 var(--serif); color: var(--ink); }
+#og-card .ob { display: flex; align-items: flex-end; gap: 56px; margin-top: 34px; flex: 1; }
+#og-card .on { font: 600 112px/1 var(--sans); color: var(--rule); letter-spacing: -.02em; }
+#og-card .ol { font-size: 21px; color: var(--ink-2); margin-top: 12px; white-space: nowrap; }
+#og-card .oc { flex: 1; height: 230px; }
+#og-card .of { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--hair); padding-top: 18px; margin-top: 26px; font-size: 19px; color: var(--ink-2); }
+#og-card .of b { color: var(--ink); }
+@media (max-width: 600px) { .tools { gap: 10px; } .foot { flex-direction: column; align-items: flex-start; gap: 4px; } }
+@media print { .controls, .tools, .follow { display: none; } .exhibit { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div id="og-card" aria-hidden="true"><div class="ok">Vesper X · 数据追踪</div><div class="ot">AI 巨头现金流追踪</div><div class="ob"><div><div class="on" id="og-n"></div><div class="ol" id="og-l"></div></div><div class="oc" id="og-c"></div></div><div class="of"><span id="og-d"></span><b>@Vespr_x</b></div></div>
+<div class="page">
+  <header class="mast">
+    <div>
+      <div class="kicker">Vesper X · 数据追踪</div>
+      <h1>AI 巨头现金流追踪</h1>
+      <p class="dek" id="dek"></p>
+    </div>
+    <div class="side">
+      <div id="side"></div>
+      <a class="follow" href="https://x.com/Vespr_x" target="_blank" rel="noopener noreferrer">关注 @Vespr_x · 每季财报后更新</a>
+    </div>
+  </header>
+
+  <nav class="controls" aria-label="筛选">
+    <div><span class="lab">公司</span><span class="toggles" id="toggles"></span></div>
+    <div>
+      <span class="lab">区间</span>
+      <select id="qStart" aria-label="起始季度"></select>
+      <span class="lab" style="margin:0 6px">至</span>
+      <select id="qEnd" aria-label="结束季度"></select>
+    </div>
+    <button class="linkbtn" id="reset" type="button">恢复全部</button>
+  </nav>
+
+  <section class="kpis" id="kpis" aria-label="末季要点"></section>
+
+  <section class="highlights" id="highlights" hidden>
+    <div class="ex-num" id="hl-label">本季要点</div>
+    <ol id="hl-list"></ol>
+    <div class="hl-by" id="hl-by"></div>
+  </section>
+
+  <section class="exhibit" id="fig-capex" data-share="capex">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-capex">资本开支</h2>
+    <p class="ex-sub">购置物业和设备，单季</p>
+    <div class="legend" id="lg-capex"></div>
+    <div class="chart" id="c-capex" tabindex="0" aria-label="资本开支堆叠柱状图，可用左右方向键逐季查看"></div>
+    <div class="foot" id="f-capex"></div>
+  </section>
+
+  <section class="exhibit" id="fig-hidden" data-share="hidden">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-hidden">已签约、还没起租的租赁承诺</h2>
+    <p class="ex-sub">租约已签、资产未交付，还不在资产负债表里；季末余额，未折现</p>
+    <div class="multiples" id="m-hidden"></div>
+    <div class="foot" id="f-hidden"></div>
+  </section>
+
+  <section class="exhibit" id="fig-guide" data-share="guide" hidden>
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-guide">资本开支指引与实际</h2>
+    <p class="ex-sub">管理层给的资本开支指引，和同口径的实际数对照</p>
+    <div class="twrap"><table class="data" id="guide"></table></div>
+    <div class="foot" id="f-guide"></div>
+  </section>
+
+  <section class="exhibit" id="fig-fcf" data-share="fcf">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-fcf">调整后自由现金流</h2>
+    <p class="ex-sub">经营现金流 − 资本开支 − 融资租赁本金，单季；灰线为其他公司</p>
+    <div class="multiples" id="m-fcf"></div>
+    <div class="foot" id="f-fcf"></div>
+  </section>
+
+  <section class="exhibit" id="fig-fund" data-share="fund">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-fund">付完回购和分红之后的现金流</h2>
+    <p class="ex-sub">调整后 FCF 减回购和股息，单季；小图上方为同季净借债</p>
+    <div class="multiples" id="m-fund"></div>
+    <div class="foot" id="f-fund"></div>
+  </section>
+
+  <section class="exhibit" id="fig-debt" data-share="debt">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-debt">净债务</h2>
+    <p class="ex-sub">总债务减现金及短期投资，季末；正值为净负债</p>
+    <div class="multiples" id="m-debt"></div>
+    <div class="foot" id="f-debt"></div>
+  </section>
+
+  <section class="exhibit" id="fig-cr" data-share="cr">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-cr">资本开支占收入</h2>
+    <p class="ex-sub">资本开支 / 当季收入</p>
+    <div class="multiples" id="m-cr"></div>
+    <div class="foot" id="f-cr"></div>
+  </section>
+
+  <section class="exhibit" id="fig-yield" data-share="yield">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-yield">调整后 FCF 收益率（TTM）</h2>
+    <p class="ex-sub">最近四季调整后 FCF / 季末市值</p>
+    <div class="multiples" id="m-yield"></div>
+    <div class="foot" id="f-yield"></div>
+  </section>
+
+  <section class="exhibit" id="fig-rpo" data-share="rpo">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-rpo">剩余履约义务（RPO）同比</h2>
+    <p class="ex-sub">各家口径不同，只看自身走势；纵轴各自独立</p>
+    <div class="multiples" id="m-rpo"></div>
+    <div class="foot" id="f-rpo"></div>
+  </section>
+
+  <section class="exhibit" id="fig-cloud" data-share="cloud">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-cloud">云业务经营利润率</h2>
+    <p class="ex-sub">云分部经营利润 / 云分部收入，单季</p>
+    <div class="multiples" id="m-cloud"></div>
+    <div class="foot" id="f-cloud"></div>
+  </section>
+
+  <section class="exhibit" id="fig-react" data-share="react">
+    <div class="ex-top"><div class="ex-num"></div><div class="tools"></div></div>
+    <h2 class="ex-title" id="t-react">财报后首个完整交易日，相对 QQQ</h2>
+    <p class="ex-sub">个股收益减 QQQ，百分点；蓝色跑赢，红色跑输</p>
+    <div class="twrap"><table class="heat" id="heat"></table></div>
+    <div class="scale"><span>−15</span><span class="bar" id="scalebar"></span><span>+15 pp</span></div>
+    <div class="foot" id="f-react"></div>
+  </section>
+
+  <section class="exhibit appendix" id="fig-table">
+    <div class="ex-top"><div class="ex-num">附表</div></div>
+    <h2 class="ex-title">分季度数据</h2>
+    <div class="tbar">
+      <span class="lab" style="color:var(--muted);font-size:12px">指标</span>
+      <select id="metricSel" aria-label="选择指标"></select>
+      <span style="color:var(--muted);font-size:12px">点击数字打开该季度主文件的 SEC 索引</span>
+    </div>
+    <div class="twrap"><table class="data" id="tbl"></table></div>
+    <div class="foot" id="f-tbl"></div>
+    <details id="mgmtBox">
+      <summary>管理层口径资本开支（含融资租赁，来自电话会）</summary>
+      <p class="ex-sub" style="margin-top:8px">和本表 capex_adj 定义不同（管理层口径含已收货未付款部分，融资租赁按起租全额计入），差额只解释不调整。</p>
+      <div class="twrap"><table class="data" id="mgmt"></table></div>
+    </details>
+  </section>
+
+  <section class="notes">
+    <h3>口径说明</h3>
+    <ol>
+      <li id="note-src">财务数字以 SEC 原文为准；附表中的数字可点开对应季度的 SEC 文件，差分与 TTM 由多份文件计算。</li>
+      <li>META 全窗口按净额口径（扣处置收入），相关派生值沿用；其余公司为总额。</li>
+      <li>ORCL 财年 5 月底结束，每个财季比对应日历季度早一个月，按截止日所在日历季度摆放。</li>
+      <li>capex_adj（含新增融资租赁）与 RPO 不做五家横向比较；META 不画 RPO。</li>
+      <li>已签未起租的租赁承诺是未来多年的付款总额（未折现），和单季资本开支不是同一种量，倍数只作规模参照；各家披露范围略有不同，部分季度只含经营租赁。</li>
+      <li>图中断线和空白表示公司没有单独披露、或口径拆不开，不是零；不补零，不插值。</li>
+      <li>管理层口径资本开支只来自电话会，引用时注明“管理层口径”。</li>
+      <li id="note-px">市值为季末收盘价 × SEC 文件封面各类股数。</li>
+    </ol>
+  </section>
+
+  <footer class="colophon">
+    <span id="colo"></span>
+    <span>@Vespr_x · 内容仅供参考，不构成投资建议</span>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script id="data" type="application/json">{"generated_at":"2026-11-04 14:36 UTC","data_as_of":"2026-11-03","price_as_of":"2026-11-02","quarters":["2023Q4","2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1","2026Q2","2026Q3"],"companies":[{"key":"MSFT","slot":1,"basis":"gross","offset":0,"cp_in_debt":false},{"key":"GOOGL","slot":2,"basis":"gross","offset":0,"cp_in_debt":true},{"key":"META","slot":3,"basis":"net","offset":0,"cp_in_debt":false},{"key":"AMZN","slot":4,"basis":"gross","offset":0,"cp_in_debt":false},{"key":"ORCL","slot":5,"basis":"gross","offset":-1,"cp_in_debt":false}],"rows":{"MSFT":{"2023Q4":{"revenue":62020.0,"ocf":18853.0,"capex":9735.0,"capex_adj":11531.0,"fcf":9118.0,"fcf_adj":8830.0,"capex_to_rev":0.156965,"capex_adj_to_rev":0.185924,"capex_ttm":35202.0,"ocf_ttm":102647.0,"fcf_adj_ttm":66334.0,"fin_lease_principal":288.0,"new_fin_lease_rou":1796.0,"leases_not_commenced":92600.0,"rpo":229000.0,"rpo_yoy":0.186528,"rpo_qoq":null,"mkt_cap":2794141.23955316,"fcf_yield_ttm":0.02374,"earn_reaction":-0.026946,"earn_reaction_vs_qqq":-0.00736,"debt_issued":10773.0,"cp_net":-8490.0,"debt_repaid":2916.0,"buybacks":4000.0,"dividends":5574.0,"cash_and_st_inv":81017.0,"total_debt":74219.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2023-12-31","release_date":"2024-01-30","accession":"0000950170-24-008814","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017024008814/"},"2024Q1":{"revenue":61858.0,"ocf":31917.0,"capex":10952.0,"capex_adj":14373.0,"fcf":20965.0,"fcf_adj":20642.0,"capex_to_rev":0.177051,"capex_adj_to_rev":0.232355,"capex_ttm":39547.0,"ocf_ttm":110123.0,"fcf_adj_ttm":69414.0,"fin_lease_principal":323.0,"new_fin_lease_rou":3421.0,"leases_not_commenced":96200.0,"rpo":242000.0,"rpo_yoy":0.20398,"rpo_qoq":0.056769,"mkt_cap":3126919.69365168,"fcf_yield_ttm":0.022199,"earn_reaction":0.018244,"earn_reaction_vs_qqq":0.002812,"debt_issued":6352.0,"cp_net":-3810.0,"debt_repaid":11589.0,"buybacks":4213.0,"dividends":5572.0,"cash_and_st_inv":80021.0,"total_debt":65442.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2024-03-31","release_date":"2024-04-25","accession":"0000950170-24-048288","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017024048288/"},"2024Q2":{"revenue":64727.0,"ocf":37195.0,"capex":13873.0,"capex_adj":18585.0,"fcf":23322.0,"fcf_adj":22932.0,"capex_to_rev":0.214331,"capex_adj_to_rev":0.287129,"capex_ttm":44477.0,"ocf_ttm":118548.0,"fcf_adj_ttm":72785.0,"fin_lease_principal":390.0,"new_fin_lease_rou":4712.0,"leases_not_commenced":117000.0,"rpo":275000.0,"rpo_yoy":0.200873,"rpo_qoq":0.136364,"mkt_cap":3322196.50438795,"fcf_yield_ttm":0.021909,"earn_reaction":-0.010806,"earn_reaction_vs_qqq":-0.0404,"debt_issued":197.0,"cp_net":-1142.0,"debt_repaid":13065.0,"buybacks":4210.0,"dividends":5574.0,"cash_and_st_inv":75543.0,"total_debt":51630.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2024-06-30","release_date":"2024-07-30","accession":"0000950170-24-087843","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/"},"2024Q3":{"revenue":65585.0,"ocf":34180.0,"capex":14923.0,"capex_adj":19255.0,"fcf":19257.0,"fcf_adj":18455.0,"capex_to_rev":0.227537,"capex_adj_to_rev":0.293588,"capex_ttm":49483.0,"ocf_ttm":122145.0,"fcf_adj_ttm":70859.0,"fin_lease_principal":802.0,"new_fin_lease_rou":4332.0,"leases_not_commenced":116100.0,"rpo":266000.0,"rpo_yoy":0.231481,"rpo_qoq":-0.032727,"mkt_cap":3199229.1979128,"fcf_yield_ttm":0.022149,"earn_reaction":-0.060528,"earn_reaction_vs_qqq":-0.035285,"debt_issued":0.0,"cp_net":-5746.0,"debt_repaid":966.0,"buybacks":4107.0,"dividends":5574.0,"cash_and_st_inv":78428.0,"total_debt":45117.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2024-09-30","release_date":"2024-10-30","accession":"0000950170-24-118967","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017024118967/"},"2024Q4":{"revenue":69632.0,"ocf":22291.0,"capex":15804.0,"capex_adj":22239.0,"fcf":6487.0,"fcf_adj":6007.0,"capex_to_rev":0.226965,"capex_adj_to_rev":0.319379,"capex_ttm":55552.0,"ocf_ttm":125583.0,"fcf_adj_ttm":68036.0,"fin_lease_principal":480.0,"new_fin_lease_rou":6435.0,"leases_not_commenced":105400.0,"rpo":304000.0,"rpo_yoy":0.327511,"rpo_qoq":0.142857,"mkt_cap":3133423.5120525,"fcf_yield_ttm":0.021713,"earn_reaction":-0.061809,"earn_reaction_vs_qqq":-0.066071,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":4986.0,"dividends":6170.0,"cash_and_st_inv":71555.0,"total_debt":44970.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2024-12-31","release_date":"2025-01-29","accession":"0000950170-25-010491","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017025010491/"},"2025Q1":{"revenue":70066.0,"ocf":37044.0,"capex":16745.0,"capex_adj":19986.0,"fcf":20299.0,"fcf_adj":19947.0,"capex_to_rev":0.238989,"capex_adj_to_rev":0.285245,"capex_ttm":61345.0,"ocf_ttm":130710.0,"fcf_adj_ttm":67341.0,"fin_lease_principal":352.0,"new_fin_lease_rou":3241.0,"leases_not_commenced":99200.0,"rpo":321000.0,"rpo_yoy":0.326446,"rpo_qoq":0.055921,"mkt_cap":2790102.64148235,"fcf_yield_ttm":0.024136,"earn_reaction":0.076254,"earn_reaction_vs_qqq":0.063193,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":2250.0,"buybacks":4781.0,"dividends":6169.0,"cash_and_st_inv":79618.0,"total_debt":42881.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2025-03-31","release_date":"2025-04-30","accession":"0000950170-25-061046","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017025061046/"},"2025Q2":{"revenue":76441.0,"ocf":42647.0,"capex":17079.0,"capex_adj":23582.0,"fcf":25568.0,"fcf_adj":24919.0,"capex_to_rev":0.223427,"capex_adj_to_rev":0.308499,"capex_ttm":64551.0,"ocf_ttm":136162.0,"fcf_adj_ttm":69328.0,"fin_lease_principal":649.0,"new_fin_lease_rou":6503.0,"leases_not_commenced":92700.0,"rpo":375000.0,"rpo_yoy":0.363636,"rpo_qoq":0.168224,"mkt_cap":3697331.28857839,"fcf_yield_ttm":0.018751,"earn_reaction":0.039475,"earn_reaction_vs_qqq":0.044774,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":4546.0,"dividends":6169.0,"cash_and_st_inv":94565.0,"total_debt":43151.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2025-06-30","release_date":"2025-07-30","accession":"0000950170-25-100235","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/"},"2025Q3":{"revenue":77673.0,"ocf":45057.0,"capex":19394.0,"capex_adj":28541.0,"fcf":25663.0,"fcf_adj":25024.0,"capex_to_rev":0.249688,"capex_adj_to_rev":0.367451,"capex_ttm":69022.0,"ocf_ttm":147039.0,"fcf_adj_ttm":75897.0,"fin_lease_principal":639.0,"new_fin_lease_rou":9147.0,"leases_not_commenced":106200.0,"rpo":398000.0,"rpo_yoy":0.496241,"rpo_qoq":0.061333,"mkt_cap":3849600.00640725,"fcf_yield_ttm":0.019716,"earn_reaction":-0.029157,"earn_reaction_vs_qqq":-0.013869,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":5650.0,"dividends":6169.0,"cash_and_st_inv":102012.0,"total_debt":43208.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2025-09-30","release_date":"2025-10-29","accession":"0001193125-25-256321","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000119312525256321/"},"2025Q4":{"revenue":81273.0,"ocf":35758.0,"capex":29876.0,"capex_adj":36206.0,"fcf":5882.0,"fcf_adj":5181.0,"capex_to_rev":0.367601,"capex_adj_to_rev":0.445486,"capex_ttm":83094.0,"ocf_ttm":160506.0,"fcf_adj_ttm":75071.0,"fin_lease_principal":701.0,"new_fin_lease_rou":6330.0,"leases_not_commenced":155100.0,"rpo":631000.0,"rpo_yoy":1.075658,"rpo_qoq":0.585427,"mkt_cap":3591182.73373512,"fcf_yield_ttm":0.020904,"earn_reaction":-0.099931,"earn_reaction_vs_qqq":-0.093946,"debt_issued":0.0,"cp_net":null,"debt_repaid":3000.0,"buybacks":7415.0,"dividends":6762.0,"cash_and_st_inv":89462.0,"total_debt":40262.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2025-12-31","release_date":"2026-01-28","accession":"0001193125-26-027207","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000119312526027207/"},"2026Q1":{"revenue":82886.0,"ocf":46679.0,"capex":30876.0,"capex_adj":34885.0,"fcf":15803.0,"fcf_adj":14964.0,"capex_to_rev":0.372512,"capex_adj_to_rev":0.420879,"capex_ttm":97225.0,"ocf_ttm":170141.0,"fcf_adj_ttm":70088.0,"fin_lease_principal":839.0,"new_fin_lease_rou":4009.0,"leases_not_commenced":196600.0,"rpo":633000.0,"rpo_yoy":0.971963,"rpo_qoq":0.00317,"mkt_cap":2749783.67437968,"fcf_yield_ttm":0.025489,"earn_reaction":-0.039297,"earn_reaction_vs_qqq":-0.048623,"debt_issued":0.0,"cp_net":null,"debt_repaid":0.0,"buybacks":4627.0,"dividends":6756.0,"cash_and_st_inv":78272.0,"total_debt":40262.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2026-03-31","release_date":"2026-04-29","accession":"0001193125-26-191507","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/"},"2026Q2":{"revenue":90007.0,"ocf":55441.0,"capex":35802.0,"capex_adj":40924.0,"fcf":19639.0,"fcf_adj":18717.0,"capex_to_rev":0.397769,"capex_adj_to_rev":0.454676,"capex_ttm":115948.0,"ocf_ttm":182935.0,"fcf_adj_ttm":63886.0,"fin_lease_principal":922.0,"new_fin_lease_rou":5122.0,"leases_not_commenced":329100.0,"rpo":684000.0,"rpo_yoy":0.824,"rpo_qoq":0.080569,"mkt_cap":2769876.97905282,"fcf_yield_ttm":0.023065,"earn_reaction":0.155067,"earn_reaction_vs_qqq":0.122093,"debt_issued":0.0,"cp_net":null,"debt_repaid":0.0,"buybacks":4579.0,"dividends":6758.0,"cash_and_st_inv":76843.0,"total_debt":40294.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2026-06-30","release_date":"2026-07-29","accession":"0001193125-26-323660","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000119312526323660/"},"2026Q3":{"revenue":92279.0,"ocf":58000.0,"capex":39367.0,"capex_adj":44559.0,"fcf":18633.0,"fcf_adj":17633.0,"capex_to_rev":0.426608,"capex_adj_to_rev":0.482873,"capex_ttm":135921.0,"ocf_ttm":195878.0,"fcf_adj_ttm":56495.0,"fin_lease_principal":1000.0,"new_fin_lease_rou":5192.0,"leases_not_commenced":364600.0,"rpo":683000.0,"rpo_yoy":0.71608,"rpo_qoq":-0.001462,"mkt_cap":3808895.1857208,"fcf_yield_ttm":0.014832,"earn_reaction":-0.001638,"earn_reaction_vs_qqq":0.012515,"debt_issued":0.0,"cp_net":null,"debt_repaid":4850.0,"buybacks":4379.0,"dividends":6757.0,"cash_and_st_inv":64509.0,"total_debt":35481.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":null,"period_end":"2026-09-30","release_date":"2026-10-28","accession":"0001193125-26-436133","filing_url":"https://www.sec.gov/Archives/edgar/data/789019/000119312526436133/"}},"GOOGL":{"2023Q4":{"revenue":86310.0,"ocf":18915.0,"capex":11019.0,"capex_adj":null,"fcf":7896.0,"fcf_adj":null,"capex_to_rev":0.127668,"capex_adj_to_rev":null,"capex_ttm":32251.0,"ocf_ttm":101746.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":null,"leases_not_commenced":3957.0,"rpo":74100.0,"rpo_yoy":0.152411,"rpo_qoq":null,"mkt_cap":1743797.81,"fcf_yield_ttm":null,"earn_reaction":-0.075003,"earn_reaction_vs_qqq":-0.055417,"debt_issued":1492.0,"cp_net":null,"debt_repaid":1929.0,"buybacks":16191.0,"dividends":0.0,"cash_and_st_inv":110916.0,"total_debt":12870.0,"cloud_rev":9192.0,"cloud_oi":864.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2023-12-31","release_date":"2024-01-30","accession":"0001652044-24-000022","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/"},"2024Q1":{"revenue":80539.0,"ocf":28848.0,"capex":12012.0,"capex_adj":12031.0,"fcf":16836.0,"fcf_adj":16746.0,"capex_to_rev":0.149145,"capex_adj_to_rev":0.149381,"capex_ttm":37974.0,"ocf_ttm":107085.0,"fcf_adj_ttm":null,"fin_lease_principal":90.0,"new_fin_lease_rou":19.0,"leases_not_commenced":3600.0,"rpo":72500.0,"rpo_yoy":0.175041,"rpo_qoq":-0.021592,"mkt_cap":1872663.55,"fcf_yield_ttm":null,"earn_reaction":0.102244,"earn_reaction_vs_qqq":0.086812,"debt_issued":1982.0,"cp_net":null,"debt_repaid":3079.0,"buybacks":15696.0,"dividends":0.0,"cash_and_st_inv":108090.0,"total_debt":null,"cloud_rev":9574.0,"cloud_oi":900.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-03-31","release_date":"2024-04-25","accession":"0001652044-24-000053","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204424000053/"},"2024Q2":{"revenue":84742.0,"ocf":26640.0,"capex":13186.0,"capex_adj":13332.0,"fcf":13454.0,"fcf_adj":13357.0,"capex_to_rev":0.155602,"capex_adj_to_rev":0.157325,"capex_ttm":44272.0,"ocf_ttm":105059.0,"fcf_adj_ttm":null,"fin_lease_principal":97.0,"new_fin_lease_rou":146.0,"leases_not_commenced":5200.0,"rpo":78800.0,"rpo_yoy":0.30033,"rpo_qoq":0.086897,"mkt_cap":2249359.45,"fcf_yield_ttm":null,"earn_reaction":-0.050388,"earn_reaction_vs_qqq":-0.014517,"debt_issued":2893.0,"cp_net":null,"debt_repaid":2423.0,"buybacks":15684.0,"dividends":2466.0,"cash_and_st_inv":100725.0,"total_debt":null,"cloud_rev":10347.0,"cloud_oi":1172.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-06-30","release_date":"2024-07-23","accession":"0001652044-24-000079","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204424000079/"},"2024Q3":{"revenue":88268.0,"ocf":30698.0,"capex":13061.0,"capex_adj":13139.0,"fcf":17637.0,"fcf_adj":17510.0,"capex_to_rev":0.14797,"capex_adj_to_rev":0.148853,"capex_ttm":49278.0,"ocf_ttm":105101.0,"fcf_adj_ttm":null,"fin_lease_principal":127.0,"new_fin_lease_rou":78.0,"leases_not_commenced":6100.0,"rpo":86800.0,"rpo_yoy":0.337442,"rpo_qoq":0.101523,"mkt_cap":2037585.41,"fcf_yield_ttm":null,"earn_reaction":0.028171,"earn_reaction_vs_qqq":0.035728,"debt_issued":3819.0,"cp_net":null,"debt_repaid":3449.0,"buybacks":15291.0,"dividends":2455.0,"cash_and_st_inv":93230.0,"total_debt":null,"cloud_rev":11353.0,"cloud_oi":1947.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-09-30","release_date":"2024-10-29","accession":"0001652044-24-000118","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204424000118/"},"2024Q4":{"revenue":96469.0,"ocf":39113.0,"capex":14276.0,"capex_adj":14346.0,"fcf":24837.0,"fcf_adj":24746.0,"capex_to_rev":0.147985,"capex_adj_to_rev":0.148711,"capex_ttm":52535.0,"ocf_ttm":125299.0,"fcf_adj_ttm":72359.0,"fin_lease_principal":91.0,"new_fin_lease_rou":70.0,"leases_not_commenced":7273.0,"rpo":93200.0,"rpo_yoy":0.25776,"rpo_qoq":0.073733,"mkt_cap":2313833.58,"fcf_yield_ttm":0.031272,"earn_reaction":-0.072924,"earn_reaction_vs_qqq":-0.077462,"debt_issued":4895.0,"cp_net":null,"debt_repaid":3750.0,"buybacks":15551.0,"dividends":2442.0,"cash_and_st_inv":95657.0,"total_debt":14182.0,"cloud_rev":11955.0,"cloud_oi":2093.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-12-31","release_date":"2025-02-04","accession":"0001652044-25-000014","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000014/"},"2025Q1":{"revenue":90234.0,"ocf":36150.0,"capex":17197.0,"capex_adj":17720.0,"fcf":18953.0,"fcf_adj":18761.0,"capex_to_rev":0.190582,"capex_adj_to_rev":0.196378,"capex_ttm":57720.0,"ocf_ttm":132601.0,"fcf_adj_ttm":74374.0,"fin_lease_principal":192.0,"new_fin_lease_rou":523.0,"leases_not_commenced":17300.0,"rpo":92400.0,"rpo_yoy":0.274483,"rpo_qoq":-0.008584,"mkt_cap":1885236.21,"fcf_yield_ttm":0.039451,"earn_reaction":0.016826,"earn_reaction_vs_qqq":0.005678,"debt_issued":4532.0,"cp_net":null,"debt_repaid":4521.0,"buybacks":15068.0,"dividends":2434.0,"cash_and_st_inv":95328.0,"total_debt":14386.0,"cloud_rev":12260.0,"cloud_oi":2177.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-03-31","release_date":"2025-04-24","accession":"0001652044-25-000043","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000043/"},"2025Q2":{"revenue":96428.0,"ocf":27747.0,"capex":22446.0,"capex_adj":22529.0,"fcf":5301.0,"fcf_adj":5191.0,"capex_to_rev":0.232775,"capex_adj_to_rev":0.233635,"capex_ttm":66980.0,"ocf_ttm":133708.0,"fcf_adj_ttm":66208.0,"fin_lease_principal":110.0,"new_fin_lease_rou":83.0,"leases_not_commenced":23900.0,"rpo":108200.0,"rpo_yoy":0.373096,"rpo_qoq":0.170996,"mkt_cap":2137624.42,"fcf_yield_ttm":0.030973,"earn_reaction":0.010198,"earn_reaction_vs_qqq":0.00807,"debt_issued":26846.0,"cp_net":null,"debt_repaid":13876.0,"buybacks":13238.0,"dividends":2543.0,"cash_and_st_inv":95148.0,"total_debt":27607.0,"cloud_rev":13624.0,"cloud_oi":2826.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-06-30","release_date":"2025-07-23","accession":"0001652044-25-000062","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000062/"},"2025Q3":{"revenue":102346.0,"ocf":48414.0,"capex":23953.0,"capex_adj":24336.0,"fcf":24461.0,"fcf_adj":24369.0,"capex_to_rev":0.234039,"capex_adj_to_rev":0.237782,"capex_ttm":77872.0,"ocf_ttm":151424.0,"fcf_adj_ttm":73067.0,"fin_lease_principal":92.0,"new_fin_lease_rou":383.0,"leases_not_commenced":42600.0,"rpo":157700.0,"rpo_yoy":0.81682,"rpo_qoq":0.457486,"mkt_cap":2935920.85,"fcf_yield_ttm":0.024887,"earn_reaction":0.025167,"earn_reaction_vs_qqq":0.040455,"debt_issued":6624.0,"cp_net":null,"debt_repaid":7697.0,"buybacks":11504.0,"dividends":2536.0,"cash_and_st_inv":98496.0,"total_debt":26602.0,"cloud_rev":15157.0,"cloud_oi":3594.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-09-30","release_date":"2025-10-29","accession":"0001652044-25-000091","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000091/"},"2025Q4":{"revenue":113829.0,"ocf":52402.0,"capex":27851.0,"capex_adj":28468.0,"fcf":24551.0,"fcf_adj":22957.0,"capex_to_rev":0.244674,"capex_adj_to_rev":0.250094,"capex_ttm":91447.0,"ocf_ttm":164713.0,"fcf_adj_ttm":71278.0,"fin_lease_principal":1594.0,"new_fin_lease_rou":617.0,"leases_not_commenced":58500.0,"rpo":242800.0,"rpo_yoy":1.60515,"rpo_qoq":0.539632,"mkt_cap":3790711.4,"fcf_yield_ttm":0.018803,"earn_reaction":-0.005375,"earn_reaction_vs_qqq":0.009021,"debt_issued":26562.0,"cp_net":null,"debt_repaid":6333.0,"buybacks":5899.0,"dividends":2536.0,"cash_and_st_inv":126843.0,"total_debt":48543.0,"cloud_rev":17664.0,"cloud_oi":5313.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-12-31","release_date":"2026-02-04","accession":"0001652044-26-000018","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/"},"2026Q1":{"revenue":109896.0,"ocf":45790.0,"capex":35674.0,"capex_adj":35885.0,"fcf":10116.0,"fcf_adj":9594.0,"capex_to_rev":0.324616,"capex_adj_to_rev":0.326536,"capex_ttm":109924.0,"ocf_ttm":174353.0,"fcf_adj_ttm":62111.0,"fin_lease_principal":522.0,"new_fin_lease_rou":211.0,"leases_not_commenced":75600.0,"rpo":467600.0,"rpo_yoy":4.060606,"rpo_qoq":0.925865,"mkt_cap":3480257.76,"fcf_yield_ttm":0.017847,"earn_reaction":0.099617,"earn_reaction_vs_qqq":0.090291,"debt_issued":31379.0,"cp_net":null,"debt_repaid":1477.0,"buybacks":0.0,"dividends":2542.0,"cash_and_st_inv":126840.0,"total_debt":79499.0,"cloud_rev":20028.0,"cloud_oi":6598.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-03-31","release_date":"2026-04-29","accession":"0001652044-26-000048","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204426000048/"},"2026Q2":{"revenue":119796.0,"ocf":39069.0,"capex":44924.0,"capex_adj":45615.0,"fcf":-5855.0,"fcf_adj":-6173.0,"capex_to_rev":0.375004,"capex_adj_to_rev":0.380772,"capex_ttm":132402.0,"ocf_ttm":185675.0,"fcf_adj_ttm":50747.0,"fin_lease_principal":318.0,"new_fin_lease_rou":691.0,"leases_not_commenced":91000.0,"rpo":519500.0,"rpo_yoy":3.801294,"rpo_qoq":0.110992,"mkt_cap":4348306.02,"fcf_yield_ttm":0.011671,"earn_reaction":-0.071326,"earn_reaction_vs_qqq":-0.052343,"debt_issued":24847.0,"cp_net":null,"debt_repaid":3776.0,"buybacks":0.0,"dividends":2689.0,"cash_and_st_inv":242474.0,"total_debt":100164.0,"cloud_rev":24768.0,"cloud_oi":8814.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":30499.0,"period_end":"2026-06-30","release_date":"2026-07-22","accession":"0001652044-26-000071","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204426000071/"},"2026Q3":{"revenue":127577.0,"ocf":42290.0,"capex":51355.0,"capex_adj":53440.0,"fcf":-9065.0,"fcf_adj":-10175.0,"capex_to_rev":0.402541,"capex_adj_to_rev":0.418884,"capex_ttm":159804.0,"ocf_ttm":179551.0,"fcf_adj_ttm":16203.0,"fin_lease_principal":1110.0,"new_fin_lease_rou":2085.0,"leases_not_commenced":130500.0,"rpo":567700.0,"rpo_yoy":2.599873,"rpo_qoq":0.092782,"mkt_cap":4211485.66,"fcf_yield_ttm":0.003847,"earn_reaction":-0.126412,"earn_reaction_vs_qqq":-0.112258,"debt_issued":28996.0,"cp_net":null,"debt_repaid":3626.0,"buybacks":0.0,"dividends":2702.0,"cash_and_st_inv":265098.0,"total_debt":126118.0,"cloud_rev":30709.0,"cloud_oi":11121.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":12371.0,"period_end":"2026-09-30","release_date":"2026-10-28","accession":"0001652044-26-000084","filing_url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204426000084/"}},"META":{"2023Q4":{"revenue":40111.0,"ocf":19404.0,"capex":7592.0,"capex_adj":7720.0,"fcf":11812.0,"fcf_adj":11505.0,"capex_to_rev":0.189275,"capex_adj_to_rev":0.192466,"capex_ttm":27045.0,"ocf_ttm":71113.0,"fcf_adj_ttm":43010.0,"fin_lease_principal":307.0,"new_fin_lease_rou":128.0,"leases_not_commenced":8440.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":902387.43131976,"fcf_yield_ttm":0.047662,"earn_reaction":0.203176,"earn_reaction_vs_qqq":0.186276,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":5942.0,"dividends":0.0,"cash_and_st_inv":65403.0,"total_debt":18385.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2023-12-31","release_date":"2024-02-01","accession":"0001326801-24-000012","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000012/"},"2024Q1":{"revenue":36455.0,"ocf":19246.0,"capex":6400.0,"capex_adj":null,"fcf":12846.0,"fcf_adj":12531.0,"capex_to_rev":0.175559,"capex_adj_to_rev":null,"capex_ttm":26622.0,"ocf_ttm":76361.0,"fcf_adj_ttm":48630.0,"fin_lease_principal":315.0,"new_fin_lease_rou":null,"leases_not_commenced":6170.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1231690.27246578,"fcf_yield_ttm":0.039482,"earn_reaction":-0.105613,"earn_reaction_vs_qqq":-0.100783,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":15008.0,"dividends":1273.0,"cash_and_st_inv":58120.0,"total_debt":18387.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-03-31","release_date":"2024-04-24","accession":"0001326801-24-000049","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000049/"},"2024Q2":{"revenue":39071.0,"ocf":19370.0,"capex":8173.0,"capex_adj":null,"fcf":11197.0,"fcf_adj":10898.0,"capex_to_rev":0.209183,"capex_adj_to_rev":null,"capex_ttm":28661.0,"ocf_ttm":78422.0,"fcf_adj_ttm":48573.0,"fin_lease_principal":299.0,"new_fin_lease_rou":null,"leases_not_commenced":6200.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1275584.20319766,"fcf_yield_ttm":0.038079,"earn_reaction":0.048249,"earn_reaction_vs_qqq":0.07247,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":6299.0,"dividends":1266.0,"cash_and_st_inv":58080.0,"total_debt":18389.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-06-30","release_date":"2024-07-31","accession":"0001326801-24-000069","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000069/"},"2024Q3":{"revenue":40589.0,"ocf":24724.0,"capex":8258.0,"capex_adj":null,"fcf":16466.0,"fcf_adj":15522.0,"capex_to_rev":0.203454,"capex_adj_to_rev":null,"capex_ttm":30423.0,"ocf_ttm":82744.0,"fcf_adj_ttm":50456.0,"fin_lease_principal":944.0,"new_fin_lease_rou":null,"leases_not_commenced":18490.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1445118.21583052,"fcf_yield_ttm":0.034915,"earn_reaction":-0.040926,"earn_reaction_vs_qqq":-0.015683,"debt_issued":10432.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":8818.0,"dividends":1263.0,"cash_and_st_inv":70900.0,"total_debt":28823.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-09-30","release_date":"2024-10-30","accession":"0001326801-24-000081","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000081/"},"2024Q4":{"revenue":48385.0,"ocf":27988.0,"capex":14425.0,"capex_adj":null,"fcf":13563.0,"fcf_adj":13152.0,"capex_to_rev":0.29813,"capex_adj_to_rev":null,"capex_ttm":37256.0,"ocf_ttm":91328.0,"fcf_adj_ttm":52103.0,"fin_lease_principal":411.0,"new_fin_lease_rou":null,"leases_not_commenced":34120.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1483482.83625015,"fcf_yield_ttm":0.035122,"earn_reaction":0.015536,"earn_reaction_vs_qqq":0.011274,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":1270.0,"cash_and_st_inv":77815.0,"total_debt":28826.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-12-31","release_date":"2025-01-29","accession":"0001326801-25-000017","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000017/"},"2025Q1":{"revenue":42314.0,"ocf":24026.0,"capex":12941.0,"capex_adj":null,"fcf":11085.0,"fcf_adj":10334.0,"capex_to_rev":0.305833,"capex_adj_to_rev":null,"capex_ttm":43797.0,"ocf_ttm":96108.0,"fcf_adj_ttm":49906.0,"fin_lease_principal":751.0,"new_fin_lease_rou":null,"leases_not_commenced":35270.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1449157.65323364,"fcf_yield_ttm":0.034438,"earn_reaction":0.042277,"earn_reaction_vs_qqq":0.029216,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":12754.0,"dividends":1329.0,"cash_and_st_inv":70230.0,"total_debt":28829.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-03-31","release_date":"2025-04-30","accession":"0001326801-25-000054","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000054/"},"2025Q2":{"revenue":47516.0,"ocf":25561.0,"capex":16538.0,"capex_adj":null,"fcf":9023.0,"fcf_adj":8549.0,"capex_to_rev":0.348051,"capex_adj_to_rev":null,"capex_ttm":52162.0,"ocf_ttm":102299.0,"fcf_adj_ttm":47557.0,"fin_lease_principal":474.0,"new_fin_lease_rou":null,"leases_not_commenced":52560.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1854186.50128275,"fcf_yield_ttm":0.025648,"earn_reaction":0.112527,"earn_reaction_vs_qqq":0.117826,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":10167.0,"dividends":1327.0,"cash_and_st_inv":47071.0,"total_debt":28832.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-06-30","release_date":"2025-07-30","accession":"0001628280-25-036791","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025036791/"},"2025Q3":{"revenue":51242.0,"ocf":29999.0,"capex":18829.0,"capex_adj":null,"fcf":11170.0,"fcf_adj":10625.0,"capex_to_rev":0.367452,"capex_adj_to_rev":null,"capex_ttm":62733.0,"ocf_ttm":107574.0,"fcf_adj_ttm":42660.0,"fin_lease_principal":545.0,"new_fin_lease_rou":null,"leases_not_commenced":58140.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1851025.05668486,"fcf_yield_ttm":0.023047,"earn_reaction":-0.113348,"earn_reaction_vs_qqq":-0.098059,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":3327.0,"dividends":1330.0,"cash_and_st_inv":44448.0,"total_debt":28834.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-09-30","release_date":"2025-10-29","accession":"0001628280-25-047240","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025047240/"},"2025Q4":{"revenue":59893.0,"ocf":36214.0,"capex":21383.0,"capex_adj":null,"fcf":14831.0,"fcf_adj":14077.0,"capex_to_rev":0.35702,"capex_adj_to_rev":null,"capex_ttm":69691.0,"ocf_ttm":115800.0,"fcf_adj_ttm":43585.0,"fin_lease_principal":754.0,"new_fin_lease_rou":null,"leases_not_commenced":103770.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1669734.26623176,"fcf_yield_ttm":0.026103,"earn_reaction":0.104048,"earn_reaction_vs_qqq":0.110033,"debt_issued":29906.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":1338.0,"cash_and_st_inv":81592.0,"total_debt":58744.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-12-31","release_date":"2026-01-28","accession":"0001628280-26-003942","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/"},"2026Q1":{"revenue":56311.0,"ocf":32226.0,"capex":18997.0,"capex_adj":null,"fcf":13229.0,"fcf_adj":12386.0,"capex_to_rev":0.337359,"capex_adj_to_rev":null,"capex_ttm":75747.0,"ocf_ttm":124000.0,"fcf_adj_ttm":45637.0,"fin_lease_principal":843.0,"new_fin_lease_rou":null,"leases_not_commenced":182880.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1452308.12491752,"fcf_yield_ttm":0.031424,"earn_reaction":-0.0855,"earn_reaction_vs_qqq":-0.094827,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":1346.0,"cash_and_st_inv":81180.0,"total_debt":58748.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-03-31","release_date":"2026-04-29","accession":"0001628280-26-028526","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026028526/"},"2026Q2":{"revenue":60801.0,"ocf":31862.0,"capex":30116.0,"capex_adj":null,"fcf":1746.0,"fcf_adj":784.0,"capex_to_rev":0.495321,"capex_adj_to_rev":null,"capex_ttm":89325.0,"ocf_ttm":130301.0,"fcf_adj_ttm":37872.0,"fin_lease_principal":962.0,"new_fin_lease_rou":null,"leases_not_commenced":278990.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1434984.78148025,"fcf_yield_ttm":0.026392,"earn_reaction":-0.079541,"earn_reaction_vs_qqq":-0.112515,"debt_issued":24910.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":1353.0,"cash_and_st_inv":90260.0,"total_debt":83664.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-06-30","release_date":"2026-07-29","accession":"0001628280-26-050705","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/"},"2026Q3":{"revenue":64601.0,"ocf":32785.0,"capex":33942.0,"capex_adj":null,"fcf":-1157.0,"fcf_adj":-2121.0,"capex_to_rev":0.52541,"capex_adj_to_rev":null,"capex_ttm":104438.0,"ocf_ttm":133087.0,"fcf_adj_ttm":25126.0,"fin_lease_principal":964.0,"new_fin_lease_rou":null,"leases_not_commenced":355730.0,"rpo":null,"rpo_yoy":null,"rpo_qoq":null,"mkt_cap":1853735.03185054,"fcf_yield_ttm":0.013554,"earn_reaction":-0.069776,"earn_reaction_vs_qqq":-0.041191,"debt_issued":0.0,"cp_net":0.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":1361.0,"cash_and_st_inv":82449.0,"total_debt":83669.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-09-30","release_date":"2026-10-21","accession":"0001628280-26-066773","filing_url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026066773/"}},"AMZN":{"2023Q4":{"revenue":169961.0,"ocf":42465.0,"capex":14588.0,"capex_adj":14799.0,"fcf":27877.0,"fcf_adj":27098.0,"capex_to_rev":0.085831,"capex_adj_to_rev":0.087073,"capex_ttm":52729.0,"ocf_ttm":84946.0,"fcf_adj_ttm":27833.0,"fin_lease_principal":779.0,"new_fin_lease_rou":211.0,"leases_not_commenced":38181.0,"rpo":155700.0,"rpo_yoy":0.410326,"rpo_qoq":null,"mkt_cap":1578258.71335454,"fcf_yield_ttm":0.017635,"earn_reaction":0.078666,"earn_reaction_vs_qqq":0.061766,"debt_issued":0.0,"cp_net":-5604.0,"debt_repaid":290.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":86780.0,"total_debt":66955.0,"cloud_rev":24204.0,"cloud_oi":7167.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2023-12-31","release_date":"2024-02-01","accession":"0001018724-24-000008","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872424000008/"},"2024Q1":{"revenue":143313.0,"ocf":18989.0,"capex":14925.0,"capex_adj":14967.0,"fcf":4064.0,"fcf_adj":3294.0,"capex_to_rev":0.104143,"capex_adj_to_rev":0.104436,"capex_ttm":53447.0,"ocf_ttm":99147.0,"fcf_adj_ttm":41926.0,"fin_lease_principal":770.0,"new_fin_lease_rou":42.0,"leases_not_commenced":36822.0,"rpo":157700.0,"rpo_yoy":0.292623,"rpo_qoq":0.012845,"mkt_cap":1877147.4531177,"fcf_yield_ttm":0.022335,"earn_reaction":0.022857,"earn_reaction_vs_qqq":0.030088,"debt_issued":0.0,"cp_net":-66.0,"debt_repaid":330.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":85074.0,"total_debt":66532.0,"cloud_rev":25037.0,"cloud_oi":9421.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-03-31","release_date":"2024-04-30","accession":"0001018724-24-000083","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872424000083/"},"2024Q2":{"revenue":147977.0,"ocf":25281.0,"capex":17620.0,"capex_adj":17801.0,"fcf":7661.0,"fcf_adj":7123.0,"capex_to_rev":0.119073,"capex_adj_to_rev":0.120296,"capex_ttm":59612.0,"ocf_ttm":107952.0,"fcf_adj_ttm":45248.0,"fin_lease_principal":538.0,"new_fin_lease_rou":181.0,"leases_not_commenced":39847.0,"rpo":156600.0,"rpo_yoy":0.185466,"rpo_qoq":-0.006975,"mkt_cap":2028268.29975325,"fcf_yield_ttm":0.022309,"earn_reaction":-0.087847,"earn_reaction_vs_qqq":-0.064112,"debt_issued":0.0,"cp_net":296.0,"debt_repaid":4169.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":89092.0,"total_debt":62394.0,"cloud_rev":26281.0,"cloud_oi":9334.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-06-30","release_date":"2024-08-01","accession":"0001018724-24-000130","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872424000130/"},"2024Q3":{"revenue":158877.0,"ocf":25971.0,"capex":22620.0,"capex_adj":22806.0,"fcf":3351.0,"fcf_adj":2949.0,"capex_to_rev":0.142374,"capex_adj_to_rev":0.143545,"capex_ttm":69753.0,"ocf_ttm":112706.0,"fcf_adj_ttm":40464.0,"fin_lease_principal":402.0,"new_fin_lease_rou":186.0,"leases_not_commenced":50335.0,"rpo":164000.0,"rpo_yoy":0.233083,"rpo_qoq":0.047254,"mkt_cap":1959262.00112064,"fcf_yield_ttm":0.020653,"earn_reaction":0.061856,"earn_reaction_vs_qqq":0.054457,"debt_issued":0.0,"cp_net":-95.0,"debt_repaid":2183.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":88051.0,"total_debt":60226.0,"cloud_rev":27452.0,"cloud_oi":10447.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-09-30","release_date":"2024-10-31","accession":"0001018724-24-000161","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872424000161/"},"2024Q4":{"revenue":187792.0,"ocf":45636.0,"capex":27834.0,"capex_adj":28279.0,"fcf":17802.0,"fcf_adj":17469.0,"capex_to_rev":0.148217,"capex_adj_to_rev":0.150587,"capex_ttm":82999.0,"ocf_ttm":115877.0,"fcf_adj_ttm":30835.0,"fin_lease_principal":333.0,"new_fin_lease_rou":445.0,"leases_not_commenced":61627.0,"rpo":177000.0,"rpo_yoy":0.136802,"rpo_qoq":0.079268,"mkt_cap":2325035.84253528,"fcf_yield_ttm":0.013262,"earn_reaction":-0.040531,"earn_reaction_vs_qqq":-0.027918,"debt_issued":0.0,"cp_net":-53.0,"debt_repaid":2500.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":101202.0,"total_debt":57791.0,"cloud_rev":28786.0,"cloud_oi":10632.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2024-12-31","release_date":"2025-02-06","accession":"0001018724-25-000004","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872425000004/"},"2025Q1":{"revenue":155667.0,"ocf":17015.0,"capex":25019.0,"capex_adj":25073.0,"fcf":-8004.0,"fcf_adj":-8414.0,"capex_to_rev":0.160721,"capex_adj_to_rev":0.161068,"capex_ttm":93093.0,"ocf_ttm":113903.0,"fcf_adj_ttm":19127.0,"fin_lease_principal":410.0,"new_fin_lease_rou":54.0,"leases_not_commenced":67201.0,"rpo":189000.0,"rpo_yoy":0.198478,"rpo_qoq":0.067797,"mkt_cap":2019867.20895582,"fcf_yield_ttm":0.009469,"earn_reaction":-0.001157,"earn_reaction_vs_qqq":-0.016001,"debt_issued":746.0,"cp_net":-267.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":94565.0,"total_debt":58464.0,"cloud_rev":29267.0,"cloud_oi":11547.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-03-31","release_date":"2025-05-01","accession":"0001018724-25-000036","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872425000036/"},"2025Q2":{"revenue":167702.0,"ocf":32515.0,"capex":32183.0,"capex_adj":33120.0,"fcf":332.0,"fcf_adj":-79.0,"capex_to_rev":0.191906,"capex_adj_to_rev":0.197493,"capex_ttm":107656.0,"ocf_ttm":121137.0,"fcf_adj_ttm":11925.0,"fin_lease_principal":411.0,"new_fin_lease_rou":937.0,"leases_not_commenced":68884.0,"rpo":195000.0,"rpo_yoy":0.245211,"rpo_qoq":0.031746,"mkt_cap":2339775.06496083,"fcf_yield_ttm":0.005097,"earn_reaction":-0.082696,"earn_reaction_vs_qqq":-0.062997,"debt_issued":0.0,"cp_net":701.0,"debt_repaid":2751.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":93180.0,"total_debt":55896.0,"cloud_rev":30873.0,"cloud_oi":10160.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-06-30","release_date":"2025-07-31","accession":"0001018724-25-000086","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872425000086/"},"2025Q3":{"revenue":180169.0,"ocf":35525.0,"capex":35095.0,"capex_adj":36072.0,"fcf":430.0,"fcf_adj":79.0,"capex_to_rev":0.194789,"capex_adj_to_rev":0.200212,"capex_ttm":120131.0,"ocf_ttm":130691.0,"fcf_adj_ttm":9055.0,"fin_lease_principal":351.0,"new_fin_lease_rou":977.0,"leases_not_commenced":75021.0,"rpo":200000.0,"rpo_yoy":0.219512,"rpo_qoq":0.025641,"mkt_cap":2347250.72953527,"fcf_yield_ttm":0.003858,"earn_reaction":0.095845,"earn_reaction_vs_qqq":0.091021,"debt_issued":0.0,"cp_net":1397.0,"debt_repaid":1008.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":94197.0,"total_debt":54959.0,"cloud_rev":33006.0,"cloud_oi":11434.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-09-30","release_date":"2025-10-30","accession":"0001018724-25-000123","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872425000123/"},"2025Q4":{"revenue":213386.0,"ocf":54459.0,"capex":39522.0,"capex_adj":40465.0,"fcf":14937.0,"fcf_adj":14552.0,"capex_to_rev":0.185214,"capex_adj_to_rev":0.189633,"capex_ttm":131819.0,"ocf_ttm":139514.0,"fcf_adj_ttm":6138.0,"fin_lease_principal":385.0,"new_fin_lease_rou":943.0,"leases_not_commenced":96373.0,"rpo":244000.0,"rpo_yoy":0.378531,"rpo_qoq":0.22,"mkt_cap":2477834.4352134,"fcf_yield_ttm":0.002477,"earn_reaction":-0.055548,"earn_reaction_vs_qqq":-0.076686,"debt_issued":14927.0,"cp_net":-937.0,"debt_repaid":1262.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":123029.0,"total_debt":68851.0,"cloud_rev":35579.0,"cloud_oi":12465.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-12-31","release_date":"2026-02-05","accession":"0001018724-26-000004","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/"},"2026Q1":{"revenue":181519.0,"ocf":26032.0,"capex":44203.0,"capex_adj":45768.0,"fcf":-18171.0,"fcf_adj":-18639.0,"capex_to_rev":0.243517,"capex_adj_to_rev":0.252139,"capex_ttm":151003.0,"ocf_ttm":148531.0,"fcf_adj_ttm":-4087.0,"fin_lease_principal":468.0,"new_fin_lease_rou":1565.0,"leases_not_commenced":106347.0,"rpo":364000.0,"rpo_yoy":0.925926,"rpo_qoq":0.491803,"mkt_cap":2240383.18223572,"fcf_yield_ttm":-0.001824,"earn_reaction":0.007679,"earn_reaction_vs_qqq":-0.001647,"debt_issued":53441.0,"cp_net":-91.0,"debt_repaid":0.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":143089.0,"total_debt":122058.0,"cloud_rev":37587.0,"cloud_oi":14161.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-03-31","release_date":"2026-04-29","accession":"0001018724-26-000014","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872426000014/"},"2026Q2":{"revenue":200606.0,"ocf":45387.0,"capex":54208.0,"capex_adj":54771.0,"fcf":-8821.0,"fcf_adj":-9216.0,"capex_to_rev":0.270221,"capex_adj_to_rev":0.273028,"capex_ttm":173028.0,"ocf_ttm":161403.0,"fcf_adj_ttm":-13224.0,"fin_lease_principal":395.0,"new_fin_lease_rou":563.0,"leases_not_commenced":137214.0,"rpo":496000.0,"rpo_yoy":1.54359,"rpo_qoq":0.362637,"mkt_cap":2570809.97675048,"fcf_yield_ttm":-0.005144,"earn_reaction":0.153206,"earn_reaction_vs_qqq":0.14671,"debt_issued":13557.0,"cp_net":-205.0,"debt_repaid":2752.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":122988.0,"total_debt":132549.0,"cloud_rev":42232.0,"cloud_oi":16621.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-06-30","release_date":"2026-07-30","accession":"0001018724-26-000026","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872426000026/"},"2026Q3":{"revenue":201944.0,"ocf":42422.0,"capex":77259.0,"capex_adj":78731.0,"fcf":-34837.0,"fcf_adj":-35270.0,"capex_to_rev":0.382576,"capex_adj_to_rev":0.389866,"capex_ttm":215192.0,"ocf_ttm":168300.0,"fcf_adj_ttm":-48573.0,"fin_lease_principal":433.0,"new_fin_lease_rou":1472.0,"leases_not_commenced":164922.0,"rpo":578000.0,"rpo_yoy":1.89,"rpo_qoq":0.165323,"mkt_cap":2694093.4089399,"fcf_yield_ttm":-0.018029,"earn_reaction":-0.014111,"earn_reaction_vs_qqq":0.020628,"debt_issued":48102.0,"cp_net":1380.0,"debt_repaid":7.0,"buybacks":0.0,"dividends":0.0,"cash_and_st_inv":114226.0,"total_debt":180332.0,"cloud_rev":45984.0,"cloud_oi":17773.0,"cloud_seg_margin":null,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-09-30","release_date":"2026-10-29","accession":"0001018724-26-000040","filing_url":"https://www.sec.gov/Archives/edgar/data/1018724/000101872426000040/"}},"ORCL":{"2023Q4":{"revenue":12941.0,"ocf":143.0,"capex":1080.0,"capex_adj":null,"fcf":-937.0,"fcf_adj":null,"capex_to_rev":0.083456,"capex_adj_to_rev":null,"capex_ttm":6935.0,"ocf_ttm":17039.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":null,"leases_not_commenced":10600.0,"rpo":65500.0,"rpo_yoy":0.070261,"rpo_qoq":null,"mkt_cap":319452.22562,"fcf_yield_ttm":null,"earn_reaction":-0.124381,"earn_reaction_vs_qqq":-0.132345,"debt_issued":0.0,"cp_net":2311.0,"debt_repaid":2500.0,"buybacks":450.0,"dividends":1099.0,"cash_and_st_inv":8690.0,"total_debt":88789.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":10817.0,"cloud_seg_margin_legacy":6914.0,"equity_issued":0.0,"period_end":"2023-11-30","release_date":"2023-12-11","accession":"0000950170-23-069682","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017023069682/"},"2024Q1":{"revenue":13280.0,"ocf":5475.0,"capex":1674.0,"capex_adj":null,"fcf":3801.0,"fcf_adj":null,"capex_to_rev":0.126054,"capex_adj_to_rev":null,"capex_ttm":5981.0,"ocf_ttm":18239.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":null,"leases_not_commenced":18800.0,"rpo":80200.0,"rpo_yoy":0.287319,"rpo_qoq":0.224427,"mkt_cap":306954.04352,"fcf_yield_ttm":null,"earn_reaction":0.117498,"earn_reaction_vs_qqq":0.103163,"debt_issued":0.0,"cp_net":-813.0,"debt_repaid":0.0,"buybacks":450.0,"dividends":1099.0,"cash_and_st_inv":9904.0,"total_debt":87980.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":11219.0,"cloud_seg_margin_legacy":7174.0,"equity_issued":0.0,"period_end":"2024-02-29","release_date":"2024-03-11","accession":"0000950170-24-029904","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017024029904/"},"2024Q2":{"revenue":14287.0,"ocf":6081.0,"capex":2798.0,"capex_adj":null,"fcf":3283.0,"fcf_adj":null,"capex_to_rev":0.195842,"capex_adj_to_rev":null,"capex_ttm":6866.0,"ocf_ttm":18673.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":null,"leases_not_commenced":22900.0,"rpo":97900.0,"rpo_yoy":0.441826,"rpo_qoq":0.220698,"mkt_cap":322959.2334,"fcf_yield_ttm":null,"earn_reaction":0.133193,"earn_reaction_vs_qqq":0.120096,"debt_issued":0.0,"cp_net":-1103.0,"debt_repaid":0.0,"buybacks":152.0,"dividends":1102.0,"cash_and_st_inv":10661.0,"total_debt":86869.0,"cloud_rev":null,"cloud_oi":null,"cloud_seg_margin":null,"cloud_rev_legacy":12072.0,"cloud_seg_margin_legacy":7894.0,"equity_issued":0.0,"period_end":"2024-05-31","release_date":"2024-06-11","accession":"0000950170-24-075605","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017024075605/"},"2024Q3":{"revenue":13307.0,"ocf":7427.0,"capex":2303.0,"capex_adj":null,"fcf":5124.0,"fcf_adj":5124.0,"capex_to_rev":0.173067,"capex_adj_to_rev":null,"capex_ttm":7855.0,"ocf_ttm":19126.0,"fcf_adj_ttm":null,"fin_lease_principal":0.0,"new_fin_lease_rou":null,"leases_not_commenced":36200.0,"rpo":99100.0,"rpo_yoy":0.526965,"rpo_qoq":0.012257,"mkt_cap":391510.06872,"fcf_yield_ttm":null,"earn_reaction":0.114376,"earn_reaction_vs_qqq":0.105134,"debt_issued":5627.0,"cp_net":-396.0,"debt_repaid":7630.0,"buybacks":150.0,"dividends":1103.0,"cash_and_st_inv":10911.0,"total_debt":84515.0,"cloud_rev":11389.0,"cloud_oi":null,"cloud_seg_margin":7196.0,"cloud_rev_legacy":11389.0,"cloud_seg_margin_legacy":7196.0,"equity_issued":0.0,"period_end":"2024-08-31","release_date":"2024-09-09","accession":"0000950170-24-104905","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017024104905/"},"2024Q4":{"revenue":14059.0,"ocf":1304.0,"capex":3970.0,"capex_adj":null,"fcf":-2666.0,"fcf_adj":-2666.0,"capex_to_rev":0.282381,"capex_adj_to_rev":null,"capex_ttm":10745.0,"ocf_ttm":20287.0,"fcf_adj_ttm":null,"fin_lease_principal":0.0,"new_fin_lease_rou":null,"leases_not_commenced":36700.0,"rpo":97300.0,"rpo_yoy":0.485496,"rpo_qoq":-0.018163,"mkt_cap":516989.34704,"fcf_yield_ttm":null,"earn_reaction":-0.066737,"earn_reaction_vs_qqq":-0.063329,"debt_issued":6210.0,"cp_net":0.0,"debt_repaid":2070.0,"buybacks":150.0,"dividends":1118.0,"cash_and_st_inv":11311.0,"total_debt":88624.0,"cloud_rev":12000.0,"cloud_oi":null,"cloud_seg_margin":7557.0,"cloud_rev_legacy":12000.0,"cloud_seg_margin_legacy":7557.0,"equity_issued":0.0,"period_end":"2024-11-30","release_date":"2024-12-09","accession":"0000950170-24-134973","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017024134973/"},"2025Q1":{"revenue":14130.0,"ocf":5933.0,"capex":5862.0,"capex_adj":null,"fcf":71.0,"fcf_adj":63.0,"capex_to_rev":0.414862,"capex_adj_to_rev":null,"capex_ttm":14933.0,"ocf_ttm":20745.0,"fcf_adj_ttm":null,"fin_lease_principal":8.0,"new_fin_lease_rou":null,"leases_not_commenced":48400.0,"rpo":130200.0,"rpo_yoy":0.623441,"rpo_qoq":0.338129,"mkt_cap":465671.09804,"fcf_yield_ttm":null,"earn_reaction":-0.030983,"earn_reaction_vs_qqq":-0.028593,"debt_issued":7711.0,"cp_net":0.0,"debt_repaid":71.0,"buybacks":150.0,"dividends":1119.0,"cash_and_st_inv":17823.0,"total_debt":96276.0,"cloud_rev":12136.0,"cloud_oi":null,"cloud_seg_margin":7628.0,"cloud_rev_legacy":12136.0,"cloud_seg_margin_legacy":7628.0,"equity_issued":0.0,"period_end":"2025-02-28","release_date":"2025-03-10","accession":"0000950170-25-037143","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017025037143/"},"2025Q2":{"revenue":15903.0,"ocf":6157.0,"capex":9080.0,"capex_adj":11099.0,"fcf":-2923.0,"fcf_adj":-2942.0,"capex_to_rev":0.570961,"capex_adj_to_rev":0.697919,"capex_ttm":21215.0,"ocf_ttm":20821.0,"fcf_adj_ttm":-421.0,"fin_lease_principal":19.0,"new_fin_lease_rou":2019.0,"leases_not_commenced":43400.0,"rpo":137800.0,"rpo_yoy":0.407559,"rpo_qoq":0.058372,"mkt_cap":464946.12649,"fcf_yield_ttm":-0.000905,"earn_reaction":0.133122,"earn_reaction_vs_qqq":0.130774,"debt_issued":0.0,"cp_net":3707.0,"debt_repaid":6070.0,"buybacks":150.0,"dividends":1403.0,"cash_and_st_inv":11203.0,"total_debt":92568.0,"cloud_rev":13705.0,"cloud_oi":null,"cloud_seg_margin":8549.0,"cloud_rev_legacy":13705.0,"cloud_seg_margin_legacy":8549.0,"equity_issued":0.0,"period_end":"2025-05-31","release_date":"2025-06-11","accession":"0000950170-25-087926","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000095017025087926/"},"2025Q3":{"revenue":14926.0,"ocf":8140.0,"capex":8502.0,"capex_adj":9624.0,"fcf":-362.0,"fcf_adj":-448.0,"capex_to_rev":0.56961,"capex_adj_to_rev":0.644781,"capex_ttm":27414.0,"ocf_ttm":21534.0,"fcf_adj_ttm":-5993.0,"fin_lease_principal":86.0,"new_fin_lease_rou":1122.0,"leases_not_commenced":99800.0,"rpo":455300.0,"rpo_yoy":3.594349,"rpo_qoq":2.304064,"mkt_cap":642596.78682,"fcf_yield_ttm":-0.009326,"earn_reaction":0.359488,"earn_reaction_vs_qqq":0.359161,"debt_issued":0.0,"cp_net":1720.0,"debt_repaid":1052.0,"buybacks":95.0,"dividends":1413.0,"cash_and_st_inv":11005.0,"total_debt":91315.0,"cloud_rev":12907.0,"cloud_oi":null,"cloud_seg_margin":7691.0,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-08-31","release_date":"2025-09-09","accession":"0001193125-25-200095","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000119312525200095/"},"2025Q4":{"revenue":16058.0,"ocf":2066.0,"capex":12033.0,"capex_adj":null,"fcf":-9967.0,"fcf_adj":-10080.0,"capex_to_rev":0.749346,"capex_adj_to_rev":null,"capex_ttm":35477.0,"ocf_ttm":22296.0,"fcf_adj_ttm":-13407.0,"fin_lease_principal":113.0,"new_fin_lease_rou":null,"leases_not_commenced":248000.0,"rpo":523300.0,"rpo_yoy":4.378212,"rpo_qoq":0.149352,"mkt_cap":580228.6035,"fcf_yield_ttm":-0.023106,"earn_reaction":-0.108336,"earn_reaction_vs_qqq":-0.105101,"debt_issued":17880.0,"cp_net":-834.0,"debt_repaid":1070.0,"buybacks":0.0,"dividends":1435.0,"cash_and_st_inv":19766.0,"total_debt":108075.0,"cloud_rev":13853.0,"cloud_oi":null,"cloud_seg_margin":8176.0,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2025-11-30","release_date":"2025-12-10","accession":"0001193125-25-315925","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000119312525315925/"},"2026Q1":{"revenue":17190.0,"ocf":7151.0,"capex":18635.0,"capex_adj":null,"fcf":-11484.0,"fcf_adj":-11571.0,"capex_to_rev":1.084061,"capex_adj_to_rev":null,"capex_ttm":48250.0,"ocf_ttm":23514.0,"fcf_adj_ttm":-25041.0,"fin_lease_principal":87.0,"new_fin_lease_rou":null,"leases_not_commenced":261000.0,"rpo":552600.0,"rpo_yoy":3.24424,"rpo_qoq":0.055991,"mkt_cap":418177.0884,"fcf_yield_ttm":-0.059881,"earn_reaction":0.091834,"earn_reaction_vs_qqq":0.091966,"debt_issued":26664.0,"cp_net":1393.0,"debt_repaid":71.0,"buybacks":0.0,"dividends":1437.0,"cash_and_st_inv":39132.0,"total_debt":134605.0,"cloud_rev":15033.0,"cloud_oi":null,"cloud_seg_margin":8707.0,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-02-28","release_date":"2026-03-10","accession":"0001193125-26-101045","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000119312526101045/"},"2026Q2":{"revenue":19184.0,"ocf":14620.0,"capex":16493.0,"capex_adj":18020.0,"fcf":-1873.0,"fcf_adj":null,"capex_to_rev":0.859727,"capex_adj_to_rev":0.939324,"capex_ttm":55663.0,"ocf_ttm":31977.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":1527.0,"leases_not_commenced":260000.0,"rpo":638000.0,"rpo_yoy":3.629898,"rpo_qoq":0.154542,"mkt_cap":650352.74238,"fcf_yield_ttm":null,"earn_reaction":-0.085263,"earn_reaction_vs_qqq":-0.119039,"debt_issued":1549.0,"cp_net":-1219.0,"debt_repaid":4749.0,"buybacks":0.0,"dividends":null,"cash_and_st_inv":31894.0,"total_debt":129541.0,"cloud_rev":16737.0,"cloud_oi":null,"cloud_seg_margin":9894.0,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":0.0,"period_end":"2026-05-31","release_date":"2026-06-10","accession":"0001193125-26-277521","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/"},"2026Q3":{"revenue":19345.0,"ocf":23103.0,"capex":28499.0,"capex_adj":30038.0,"fcf":-5396.0,"fcf_adj":null,"capex_to_rev":1.473197,"capex_adj_to_rev":1.552753,"capex_ttm":75660.0,"ocf_ttm":46940.0,"fcf_adj_ttm":null,"fin_lease_principal":null,"new_fin_lease_rou":1539.0,"leases_not_commenced":288000.0,"rpo":664000.0,"rpo_yoy":0.458379,"rpo_qoq":0.040752,"mkt_cap":450899.51232,"fcf_yield_ttm":null,"earn_reaction":-0.017392,"earn_reaction_vs_qqq":-0.026127,"debt_issued":0.0,"cp_net":-830.0,"debt_repaid":4202.0,"buybacks":null,"dividends":null,"cash_and_st_inv":37077.0,"total_debt":125337.0,"cloud_rev":17157.0,"cloud_oi":null,"cloud_seg_margin":9358.0,"cloud_rev_legacy":null,"cloud_seg_margin_legacy":null,"equity_issued":19909.0,"period_end":"2026-08-31","release_date":"2026-09-10","accession":"0001193125-26-389274","filing_url":"https://www.sec.gov/Archives/edgar/data/1341439/000119312526389274/"}}},"mgmt":[{"company":"MSFT","quarter":"2023Q4","topic":"capex_incl_finance_leases","value":11.5,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $11.5 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2024/earnings-fy-2024-q2","date":"2024-01-30"},{"company":"MSFT","quarter":"2024Q1","topic":"capex_incl_finance_leases","value":14.0,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $14 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2024/earnings-fy-2024-q3","date":"2024-04-25"},{"company":"MSFT","quarter":"2024Q2","topic":"capex_incl_finance_leases","value":19.0,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $19 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2024/earnings-fy-2024-q4","date":"2024-07-30"},{"company":"MSFT","quarter":"2024Q3","topic":"capex_incl_finance_leases","value":20.0,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $20 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2025/earnings-fy-2025-q1","date":"2024-10-30"},{"company":"MSFT","quarter":"2024Q4","topic":"capex_incl_finance_leases","value":22.6,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $22.6 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2025/earnings-fy-2025-q2","date":"2025-01-29"},{"company":"MSFT","quarter":"2025Q1","topic":"capex_incl_finance_leases","value":21.4,"unit":"USD_billion","statement":"Capital expenditures including finance leases were $21.4 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2025/earnings-fy-2025-q3","date":"2025-04-30"},{"company":"MSFT","quarter":"2025Q2","topic":"capex_incl_finance_leases","value":24.2,"unit":"USD_billion","statement":"Capital expenditures were $24.2 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2025/earnings-fy-2025-q4","date":"2025-07-30"},{"company":"MSFT","quarter":"2025Q3","topic":"capex_incl_finance_leases","value":34.9,"unit":"USD_billion","statement":"Capital expenditures were $34.9 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q1","date":"2025-10-29"},{"company":"MSFT","quarter":"2025Q4","topic":"capex_incl_finance_leases","value":37.5,"unit":"USD_billion","statement":"Capital expenditures were $37.5 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q2","date":"2026-01-28"},{"company":"MSFT","quarter":"2026Q1","topic":"capex_incl_finance_leases","value":31.9,"unit":"USD_billion","statement":"Capital expenditures were $31.9 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q3","date":"2026-04-29"},{"company":"MSFT","quarter":"2026Q2","topic":"capex_incl_finance_leases","value":41.0,"unit":"USD_billion","statement":"Capital expenditures were $41 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2026/earnings-fy-2026-q4","date":"2026-07-29"},{"company":"MSFT","quarter":"2026Q3","topic":"capex_incl_finance_leases","value":45.2,"unit":"USD_billion","statement":"Capital expenditures were $45.2 billion; includes finance leases.","url":"https://www.microsoft.com/en-us/Investor/events/FY-2027/earnings-fy-2027-q1","date":"2026-10-28"},{"company":"META","quarter":"2023Q4","topic":"capex_incl_finance_leases","value":7.9,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000010/meta-12312023xexhibit991.htm","date":"2024-02-01"},{"company":"META","quarter":"2024Q1","topic":"capex_incl_finance_leases","value":6.72,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000044/meta-03312024xexhibit991.htm","date":"2024-04-24"},{"company":"META","quarter":"2024Q2","topic":"capex_incl_finance_leases","value":8.47,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000065/meta-06302024xexhibit991.htm","date":"2024-07-31"},{"company":"META","quarter":"2024Q3","topic":"capex_incl_finance_leases","value":9.2,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680124000077/meta-09302024xexhibit991.htm","date":"2024-10-30"},{"company":"META","quarter":"2024Q4","topic":"capex_incl_finance_leases","value":14.84,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000014/meta-12312024xexhibit991.htm","date":"2025-01-29"},{"company":"META","quarter":"2025Q1","topic":"capex_incl_finance_leases","value":13.69,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000050/meta-03312025xexhibit991.htm","date":"2025-04-30"},{"company":"META","quarter":"2025Q2","topic":"capex_incl_finance_leases","value":17.01,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025036719/meta-06302025xexhibit991.htm","date":"2025-07-30"},{"company":"META","quarter":"2025Q3","topic":"capex_incl_finance_leases","value":19.37,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025047114/meta-09302025xexhibit991.htm","date":"2025-10-29"},{"company":"META","quarter":"2025Q4","topic":"capex_incl_finance_leases","value":22.14,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026003832/meta-12312025xexhibit991.htm","date":"2026-01-28"},{"company":"META","quarter":"2026Q1","topic":"capex_incl_finance_leases","value":19.84,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026028364/meta-03312026xexhibit991.htm","date":"2026-04-29"},{"company":"META","quarter":"2026Q2","topic":"capex_incl_finance_leases","value":31.08,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026050596/meta-06302026xexhibit991.htm","date":"2026-07-29"},{"company":"META","quarter":"2026Q3","topic":"capex_incl_finance_leases","value":34.91,"unit":"USD_billion","statement":"Capital expenditures include principal payments on finance leases.","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026066700/meta-09302026xexhibit991.htm","date":"2026-10-21"},{"company":"ORCL","quarter":"2026Q4","topic":"capex_outlook","value":null,"unit":"","statement":"Following a period of peak capex in FY27-FY28, capital expenditures are expected to step-down in FY29…","url":"https://investor.oracle.com/investor-news/news-details/2026/Oracle-Investor-Day-2026-Accelerating-Value-Creation/default.aspx","date":"2026-10-28"},{"company":"AMZN","quarter":"2025Q1","topic":"capex_outlook","value":26.3,"unit":"USD_billion","statement":"Capital investments were $26.3 billion in the fourth quarter…reasonably representative of our 2025 capital investment rate.","url":"https://www.marketbeat.com/earnings/reports/2025-2-6-amazoncom-inc-stock/","date":"2025-02-06"},{"company":"AMZN","quarter":"2025Q3","topic":"capex_outlook","value":31.4,"unit":"USD_billion","statement":"…$31.4 billion in Q2…reasonably representative of our quarterly capital investment rate for the back half of this year.","url":"https://www.marketbeat.com/earnings/reports/2025-7-31-amazoncom-inc-stock/","date":"2025-07-31"}],"guidance":[{"company":"MSFT","period":"CY2026","period_label":"2026 日历年","basis":"capex_incl_finance_leases","basis_label":"含融资租赁","guide_low":190000.0,"guide_high":190000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-04-29","url":"https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3","source_label":"原文","statement":"For calendar year 2026, we expect to invest roughly $190 billion in capital expenditures…","source_type":"ir_transcript"},{"company":"MSFT","period":"CY2026","period_label":"2026 日历年","basis":"capex_incl_finance_leases","basis_label":"含融资租赁","guide_low":175000.0,"guide_high":175000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-07-29","url":"https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4","source_label":"原文","statement":"However, the shift from finance to operating leases adjusts our expectation to approximately $175 billion.","source_type":"ir_transcript"},{"company":"MSFT","period":"CY2026","period_label":"2026 日历年","basis":"capex_incl_finance_leases","basis_label":"含融资租赁","guide_low":170000.0,"guide_high":170000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-10-28","url":"https://www.microsoft.com/en-us/investor/events/fy-2027/earnings-fy-2027-q1","source_label":"原文","statement":"Therefore, for the calendar year, spend should be approximately $170 billion due to the 3P capacity delays noted earlier.","source_type":"ir_transcript"},{"company":"MSFT","period":"FY26Q4","period_label":"FY26 Q4","basis":"capex_incl_finance_leases","basis_label":"含新增融资租赁","guide_low":40000.0,"guide_high":null,"low_strict":true,"high_strict":false,"actual":41000.0,"actual_source":"mgmt","date":"2026-04-29","url":"https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3","source_label":"原文","statement":"We expect CapEx spend to increase to over $40 billion as we continue to bring more capacity online.","source_type":"ir_transcript"},{"company":"MSFT","period":"FY27Q1","period_label":"FY27 Q1","basis":"capex_incl_finance_leases","basis_label":"含新增融资租赁","guide_low":50000.0,"guide_high":null,"low_strict":true,"high_strict":false,"actual":45200.0,"actual_source":"mgmt","date":"2026-07-29","url":"https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4","source_label":"原文","statement":"We expect CapEx spend will be over $50 billion including the lease reclassification impact from the useful life update.","source_type":"ir_transcript"},{"company":"MSFT","period":"FY27Q2","period_label":"FY27 Q2","basis":"capex_incl_finance_leases","basis_label":"含新增融资租赁","guide_low":50000.0,"guide_high":null,"low_strict":true,"high_strict":false,"actual":null,"actual_source":"","date":"2026-10-28","url":"https://www.microsoft.com/en-us/investor/events/fy-2027/earnings-fy-2027-q1","source_label":"原文","statement":"In Q2, we expect CapEx spend will be over $50 billion.","source_type":"ir_transcript"},{"company":"GOOGL","period":"2025","period_label":"2025 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":75000.0,"guide_high":75000.0,"low_strict":false,"high_strict":false,"actual":91447.0,"actual_source":"tracker","date":"2025-02-04","url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000010/googexhibit991q42024.htm","source_label":"原文","statement":"…we expect to invest approximately $75 billion in capital expenditures in 2025.","source_type":"press_release"},{"company":"GOOGL","period":"2025","period_label":"2025 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":85000.0,"guide_high":85000.0,"low_strict":false,"high_strict":false,"actual":91447.0,"actual_source":"tracker","date":"2025-07-23","url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000056/googexhibit991q22025.htm","source_label":"原文","statement":"…we are increasing our investment in capital expenditures in 2025 to approximately $85 billion…","source_type":"press_release"},{"company":"GOOGL","period":"2025","period_label":"2025 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":91000.0,"guide_high":93000.0,"low_strict":false,"high_strict":false,"actual":91447.0,"actual_source":"tracker","date":"2025-10-29","url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204425000087/googexhibit991q32025.htm","source_label":"原文","statement":"…we now expect 2025 capital expenditures to be in a range of $91 billion to $93 billion.","source_type":"press_release"},{"company":"GOOGL","period":"2026","period_label":"2026 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":175000.0,"guide_high":185000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-02-04","url":"https://www.sec.gov/Archives/edgar/data/1652044/000165204426000012/googexhibit991q42025.htm","source_label":"原文","statement":"…our 2026 CapEx investments are anticipated to be in the range of $175 to $185 billion.","source_type":"press_release"},{"company":"GOOGL","period":"2026","period_label":"2026 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":180000.0,"guide_high":190000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-04-29","url":"https://abc.xyz/investor/events/event-details/2026/2026-Q1-Earnings-Call-2026-nW8kCrBAKS/default.aspx","source_label":"原文","statement":"…we are updating our full year 2026 CapEx guidance range to $180 to $190 billion…","source_type":"ir_transcript"},{"company":"GOOGL","period":"2026","period_label":"2026 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":195000.0,"guide_high":205000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-07-22","url":"https://abc.xyz/investor/events/event-details/2026/2026-Q2-Earnings-Call-2026-GgTAq7Is0z/default.aspx","source_label":"原文","statement":"…we are updating our full year 2026 CapEx guidance range to $195‑205 billion…","source_type":"ir_transcript"},{"company":"META","period":"2025","period_label":"2025 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":60000.0,"guide_high":65000.0,"low_strict":false,"high_strict":false,"actual":72210.0,"actual_source":"mgmt","date":"2025-01-29","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000014/meta-12312024xexhibit991.htm","source_label":"原文","statement":"We anticipate our full year 2025 capital expenditures will be in the range of $60-65 billion.","source_type":"press_release"},{"company":"META","period":"2025","period_label":"2025 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":64000.0,"guide_high":72000.0,"low_strict":false,"high_strict":false,"actual":72210.0,"actual_source":"mgmt","date":"2025-04-30","url":"https://www.sec.gov/Archives/edgar/data/1326801/000132680125000050/meta-03312025xexhibit991.htm","source_label":"原文","statement":"…2025 capital expenditures, including principal payments on finance leases, will be in the range of $64-72 billion.","source_type":"press_release"},{"company":"META","period":"2025","period_label":"2025 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":66000.0,"guide_high":72000.0,"low_strict":false,"high_strict":false,"actual":72210.0,"actual_source":"mgmt","date":"2025-07-30","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025036719/meta-06302025xexhibit991.htm","source_label":"原文","statement":"…2025 capital expenditures, including principal payments on finance leases, to be in the range of $66-72 billion.","source_type":"press_release"},{"company":"META","period":"2025","period_label":"2025 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":70000.0,"guide_high":72000.0,"low_strict":false,"high_strict":false,"actual":72210.0,"actual_source":"mgmt","date":"2025-10-29","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828025047114/meta-09302025xexhibit991.htm","source_label":"原文","statement":"…2025 capital expenditures, including principal payments on finance leases, to be in the range of $70-72 billion.","source_type":"press_release"},{"company":"META","period":"2026","period_label":"2026 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":115000.0,"guide_high":135000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-01-28","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026003832/meta-12312025xexhibit991.htm","source_label":"原文","statement":"…2026 capital expenditures, including principal payments on finance leases, to be in the range of $115-135 billion.","source_type":"press_release"},{"company":"META","period":"2026","period_label":"2026 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":125000.0,"guide_high":145000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-04-29","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026028364/meta-03312026xexhibit991.htm","source_label":"原文","statement":"…2026 capital expenditures, including principal payments on finance leases, to be in the range of $125-145 billion.","source_type":"press_release"},{"company":"META","period":"2026","period_label":"2026 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":130000.0,"guide_high":145000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-07-29","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026050596/meta-06302026xexhibit991.htm","source_label":"原文","statement":"…2026 capital expenditures, including principal payments on finance leases, to be in the range of $130-145 billion.","source_type":"press_release"},{"company":"META","period":"2026","period_label":"2026 全年","basis":"capex_incl_fl_principal","basis_label":"净额购置支出 + 融资租赁本金","guide_low":135000.0,"guide_high":145000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-10-21","url":"https://www.sec.gov/Archives/edgar/data/1326801/000162828026066700/meta-09302026xexhibit991.htm","source_label":"原文","statement":"…2026 capital expenditures, including principal payments on finance leases, to be in the range of $135-145 billion.","source_type":"press_release"},{"company":"AMZN","period":"2025","period_label":"2025 全年","basis":"capex_net_proceeds","basis_label":"现金资本开支 (扣处置收入和激励)","guide_low":125000.0,"guide_high":125000.0,"low_strict":false,"high_strict":false,"actual":128320.0,"actual_source":"tracker","date":"2025-10-30","url":"https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-to-Webcast-Third-Quarter-2025-Financial-Results-Conference-Call/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"…we expect our full-year cash CapEx to be approximately $125 billion in 2025…","source_type":"webcast"},{"company":"AMZN","period":"2026","period_label":"2026 全年","basis":"capex_net_proceeds","basis_label":"现金资本开支 (扣处置收入和激励)","guide_low":200000.0,"guide_high":200000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-02-05","url":"https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Fourth-Quarter-Results/default.aspx","source_label":"原文","statement":"…we expect to invest about $200 billion in capital expenditures across Amazon in 2026…","source_type":"press_release"},{"company":"AMZN","period":"2026","period_label":"2026 全年","basis":"capex_net_proceeds","basis_label":"现金资本开支 (扣处置收入和激励)","guide_low":220000.0,"guide_high":220000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-07-30","url":"https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-to-Webcast-Second-Quarter-2026-Financial-Results-Conference-Call/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"We now believe we will spend approximately $220 billion in cash CapEx in 2026.","source_type":"webcast"},{"company":"ORCL","period":"FY26","period_label":"FY26 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":25000.0,"guide_high":null,"low_strict":true,"high_strict":false,"actual":55663.0,"actual_source":"tracker","date":"2025-06-11","url":"https://investor.oracle.com/investor-news/news-details/2025/Oracle-Sets-the-Date-for-its-Fourth-Quarter-Fiscal-Year-2025-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"…FY 2026 CapEx will be higher at over $25 billion…","source_type":"webcast"},{"company":"ORCL","period":"FY26","period_label":"FY26 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":35000.0,"guide_high":35000.0,"low_strict":false,"high_strict":false,"actual":55663.0,"actual_source":"tracker","date":"2025-09-09","url":"https://investor.oracle.com/investor-news/news-details/2025/Oracle-Sets-the-Date-for-its-First-Quarter-Fiscal-Year-2026-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"Given our RPO growth, I now expect fiscal year 2026 CapEx will be around $35 billion.","source_type":"webcast"},{"company":"ORCL","period":"FY26","period_label":"FY26 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":50000.0,"guide_high":50000.0,"low_strict":false,"high_strict":false,"actual":55663.0,"actual_source":"tracker","date":"2025-12-10","url":"https://investor.oracle.com/investor-news/news-details/2025/Oracle-Sets-the-Date-for-its-Second-Quarter-Fiscal-Year-2026-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"…we now expect fiscal 2026 CapEx will be about $15 billion higher than we forecasted after Q1.","source_type":"webcast"},{"company":"ORCL","period":"FY27","period_label":"FY27 全年","basis":"capex_cash","basis_label":"现金资本开支","guide_low":90000.0,"guide_high":95000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-09-10","url":"https://investor.oracle.com/investor-news/news-details/2026/Oracle-Sets-the-Date-for-its-First-Quarter-Fiscal-Year-2027-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"We continue to anticipate $90 billion-$95 billion in CapEx for the full year…","source_type":"webcast"},{"company":"ORCL","period":"FY27","period_label":"FY27 全年","basis":"capex_net_customer_funding","basis_label":"净现金资本开支 (扣客户预付和出资)","guide_low":70000.0,"guide_high":70000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-06-10","url":"https://investor.oracle.com/investor-news/news-details/2026/Oracle-Sets-the-Date-for-its-Fourth-Quarter-Fiscal-Year-2026-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"…capital expenditures of around $70 billion.","source_type":"webcast"},{"company":"ORCL","period":"FY27","period_label":"FY27 全年","basis":"capex_net_customer_funding","basis_label":"净现金资本开支 (扣客户预付和出资)","guide_low":null,"guide_high":70000.0,"low_strict":false,"high_strict":false,"actual":null,"actual_source":"","date":"2026-09-10","url":"https://investor.oracle.com/investor-news/news-details/2026/Oracle-Sets-the-Date-for-its-First-Quarter-Fiscal-Year-2027-Earnings-Announcement/default.aspx","source_label":"IR 电话会公告/回放入口","statement":"…not more than $70 billion in net cash CapEx.","source_type":"webcast"}],"public":true}</script>
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("data").textContent);
+  var Q = DATA.quarters;
+  var COS = DATA.companies.map(function (c) { return c.key; });
+  var CO = {}; DATA.companies.forEach(function (c) { CO[c.key] = c; });
+  var NS = "http://www.w3.org/2000/svg";
+  var state = { cos: new Set(COS), start: 0, end: Q.length - 1, metric: "capex" };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem("vx-dash-cos") || "null");
+    if (Array.isArray(saved)) { var k = saved.filter(function (c) { return COS.indexOf(c) >= 0; }); if (k.length) state.cos = new Set(k); }
+  } catch (e) { /* 存储不可用时忽略 */ }
+  function save() { try { localStorage.setItem("vx-dash-cos", JSON.stringify(Array.from(state.cos))); } catch (e) {} }
+
+  // ---------- 取数与格式 ----------
+  function v(co, q, m) { var r = DATA.rows[co] && DATA.rows[co][q]; var x = r ? r[m] : null; return (x === null || x === undefined || !isFinite(x)) ? null : x; }
+  function rec(co, q) { return (DATA.rows[co] && DATA.rows[co][q]) || null; }
+  function qs() { return Q.slice(state.start, state.end + 1); }
+  function act() { return COS.filter(function (c) { return state.cos.has(c); }); }
+  function col(co) { return "var(--c-" + co + ", var(--s" + Math.max(6, CO[co].slot) + "))"; }
+  function ql(q) { return q.slice(0, 4) + " " + q.slice(4); }
+  function minus(s) { return s.replace("-", "−"); }
+
+  function fUSD(x) {
+    if (x === null) return "—";
+    var a = Math.abs(x), s = x < 0 ? "−" : "";
+    if (a < 1000) return s + "$" + Math.round(a) + "M";
+    if (a >= 1e6) return s + "$" + (a / 1e6).toFixed(2) + "T";
+    var b = a / 1000; return s + "$" + (b >= 100 ? b.toFixed(0) : b.toFixed(1)) + "B";
+  }
+  function fPct(x, dp) { if (x === null) return "—"; return minus((x * 100).toFixed(dp === undefined ? 1 : dp)) + "%"; }
+  function fPP(x) { if (x === null) return "—"; var s = (x * 100).toFixed(1); return (x > 0 ? "+" : "") + minus(s); }
+  function aUSD(x) { if (x === 0) return "0"; var b = x / 1000; return (b < 0 ? "−" : "") + "$" + Math.abs(b).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "B"; }
+  function aPct(x) { if (x === 0) return "0"; return (x < 0 ? "−" : "") + (Math.round(Math.abs(x) * 1000) / 10) + "%"; }
+
+  function niceStep(span, n) { var raw = span / Math.max(n, 1), p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+  function ticks(lo, hi, n) {
+    if (lo === hi) hi = lo + 1;
+    var st = niceStep(hi - lo, n), a = Math.floor(lo / st) * st, b = Math.ceil(hi / st) * st, out = [];
+    for (var t = a; t <= b + st * 1e-9; t += st) out.push(Math.round(t / st) * st);
+    return out;
+  }
+  function el(t, a, p) { var n = document.createElementNS(NS, t); if (a) for (var k in a) n.setAttribute(k, a[k]); if (p) p.appendChild(n); return n; }
+  function h(t, c, tx, p) { var n = document.createElement(t); if (c) n.className = c; if (tx !== undefined && tx !== null) n.textContent = tx; if (p) p.appendChild(n); return n; }
+  function barPath(x, w, yb, yv, r) {
+    var hh = Math.abs(yb - yv); if (hh < .5 || w <= 0) return "";
+    r = Math.min(r, hh, w / 2);
+    var s = yv < yb ? 1 : -1;
+    return "M" + x + "," + yb + "V" + (yv + s * r) + "Q" + x + "," + yv + " " + (x + r) + "," + yv + "H" + (x + w - r) +
+      "Q" + (x + w) + "," + yv + " " + (x + w) + "," + (yv + s * r) + "V" + yb + "Z";
+  }
+  function rectPath(x, w, yt, yb) { return yb - yt < .5 ? "" : "M" + x + "," + yb + "V" + yt + "H" + (x + w) + "V" + yb + "Z"; }
+
+  // ---------- 提示框 ----------
+  var tip = document.getElementById("tip");
+  // 提示框放在图的正下方（可以盖住注释和来源），水平跟随鼠标，不挡住图里的线
+  function showTip(anchor, px, py, title, rows, total, under) {
+    tip.textContent = "";
+    h("div", "h", title, tip);
+    rows.forEach(function (r) { var d = h("div", "r", null, tip); var i = h("i", null, null, d); i.style.background = r.c; h("b", null, r.v, d); h("span", null, r.n, d); });
+    if (total) { var d = h("div", "r t", null, tip); h("i", null, null, d); h("b", null, total.v, d); h("span", null, total.n, d); }
+    tip.style.display = "block";
+    var b = anchor.getBoundingClientRect(), base = (under || anchor).getBoundingClientRect(), tw = tip.offsetWidth;
+    var vw = document.documentElement.clientWidth;
+    var left = Math.max(8, Math.min(b.left + px - tw / 2, vw - tw - 8));
+    tip.style.left = (left + scrollX) + "px";
+    tip.style.top = (base.bottom + scrollY + 6) + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+
+  // ---------- 坐标框 ----------
+  function frame(box, quarters, lo, hi, yFmt, o) {
+    box.textContent = "";
+    var W = Math.max(150, box.clientWidth || 600), H = o.height;
+    var m = { t: o.t || 8, r: o.r || 8, b: o.compactX ? 22 : 38, l: o.l || 52 };
+    var svg = el("svg", { width: W, height: H, viewBox: "0 0 " + W + " " + H, "aria-hidden": "true" }, box);
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var tk = ticks(Math.min(lo, 0), Math.max(hi, 0), o.nt || 4), y0 = tk[0], y1 = tk[tk.length - 1];
+    function y(val) { return m.t + ih - (val - y0) / (y1 - y0) * ih; }
+    var band = iw / quarters.length; function x(i) { return m.l + band * (i + .5); }
+    var g = el("g", null, svg);
+    tk.forEach(function (t) {
+      var yy = Math.round(y(t)) + .5;
+      el("line", { x1: m.l, x2: W - m.r, y1: yy, y2: yy, "class": t === 0 ? "zero" : "gridline" }, g);
+      var tx = el("text", { x: m.l - 6, y: yy + 3.5, "text-anchor": "end", "class": "tick" }, g); tx.textContent = yFmt(t);
+    });
+    if (o.compactX) {
+      [0, quarters.length - 1].forEach(function (i, k) {
+        var tx = el("text", { x: k ? W - m.r : m.l, y: H - 6, "text-anchor": k ? "end" : "start", "class": "tick" }, svg);
+        tx.textContent = quarters[i].slice(2, 4) + quarters[i].slice(4);
+      });
+    } else {
+      var every = band < 34 ? 3 : band < 52 ? 2 : 1;
+      quarters.forEach(function (q, i) {
+        if ((quarters.length - 1 - i) % every) return;
+        var a = el("text", { x: x(i), y: H - m.b + 16, "text-anchor": "middle", "class": "tick" }, svg); a.textContent = q.slice(0, 4);
+        var b = el("text", { x: x(i), y: H - m.b + 30, "text-anchor": "middle", "class": "tick" }, svg); b.textContent = q.slice(4);
+      });
+    }
+    return { svg: svg, W: W, H: H, m: m, iw: iw, ih: ih, y: y, x: x, band: band };
+  }
+  function hover(box, f, n, onIdx) {
+    var cur = -1;
+    var ov = el("rect", { x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: "transparent" }, f.svg);
+    function set(i, px, py) { if (i < 0 || i >= n) return; cur = i; onIdx(i, px === undefined ? f.x(i) : px, py === undefined ? f.m.t + f.ih / 3 : py); }
+    function clr() { cur = -1; onIdx(-1); hideTip(); }
+    ov.addEventListener("pointermove", function (e) { var r = f.svg.getBoundingClientRect(); var px = e.clientX - r.left; set(Math.max(0, Math.min(n - 1, Math.floor((px - f.m.l) / f.band))), px, e.clientY - r.top); });
+    ov.addEventListener("pointerleave", clr);
+    box.onkeydown = function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); set(Math.max(0, Math.min(n - 1, cur < 0 ? n - 1 : cur + (e.key === "ArrowRight" ? 1 : -1)))); }
+      else if (e.key === "Escape") clr();
+    };
+    box.onfocus = function () { set(cur < 0 ? n - 1 : cur); };
+    box.onblur = clr;
+  }
+  function who(co, q) { var r = rec(co, q); return CO[co].offset && r && r.period_end ? co + "（截至 " + r.period_end + "）" : co; }
+
+  // ---------- 图 1：堆叠柱 ----------
+  function stacked(box, metric, cos) {
+    var qq = qs();
+    if (!cos.length) { box.textContent = ""; h("div", "empty", "没有选中的公司", box); return; }
+    var tot = qq.map(function (q) { return cos.reduce(function (s, c) { var x = v(c, q, metric); return s + (x > 0 ? x : 0); }, 0); });
+    var wide = box.clientWidth > 640;
+    var f = frame(box, qq, 0, Math.max.apply(null, tot.concat([1])), aUSD, { height: wide ? 340 : 260, l: 56, t: 22, nt: 5 });
+    var hb = el("rect", { y: f.m.t, height: f.ih, width: f.band, "class": "band-h", opacity: 0 }, f.svg);
+    f.svg.insertBefore(hb, f.svg.childNodes[1]);
+    var bw = Math.min(24, f.band * .6);
+    qq.forEach(function (q, i) {
+      var cum = 0, segs = cos.map(function (c) { return { c: c, x: v(c, q, metric) }; }).filter(function (s) { return s.x > 0; });
+      segs.forEach(function (s, k) {
+        var yb = f.y(cum) - (k ? 2 : 0), yt = f.y(cum + s.x), top = k === segs.length - 1;
+        var d = top ? barPath(f.x(i) - bw / 2, bw, yb, yt, 4) : rectPath(f.x(i) - bw / 2, bw, yt, yb);
+        if (d) { var p = el("path", { d: d }, f.svg); p.style.fill = col(s.c); }
+        cum += s.x;
+      });
+    });
+    // 只标首末两季合计
+    [0, qq.length - 1].forEach(function (i) {
+      if (!tot[i]) return;
+      var t = el("text", { x: f.x(i), y: f.y(tot[i]) - 7, "text-anchor": "middle", "class": "dlabel" }, f.svg); t.textContent = fUSD(tot[i]);
+    });
+    hover(box, f, qq.length, function (i, px, py) {
+      if (i < 0) { hb.setAttribute("opacity", 0); return; }
+      hb.setAttribute("x", f.m.l + f.band * i); hb.setAttribute("opacity", 1);
+      var q = qq[i];
+      showTip(box, px, py, ql(q), cos.slice().reverse().map(function (c) { return { c: col(c), v: fUSD(v(c, q, metric)), n: who(c, q) }; }),
+        { v: fUSD(tot[i]), n: "合计" });
+    });
+  }
+
+  // ---------- 小多图 ----------
+  function multiples(host, metric, cos, yFmt, vFmt, shared, opts) {
+    opts = opts || {};
+    host.textContent = "";
+    var qq = qs();
+    var withData = cos.filter(function (c) { return qq.some(function (q) { return v(c, q, metric) !== null; }); });
+    if (!withData.length) { h("div", "empty", "这个区间没有数据", host); return withData; }
+    var all = [];
+    withData.forEach(function (c) { qq.forEach(function (q) { var x = v(c, q, metric); if (x !== null) all.push(x); }); });
+    var gLo = Math.min.apply(null, all), gHi = Math.max.apply(null, all);
+    var panels = [];
+    withData.forEach(function (c) {
+      var p = h("div", "panel", null, host);
+      var ph = h("div", "ph", null, p);
+      var n = h("span", "n", null, ph); var sw = h("i", null, null, n); sw.style.background = col(c); n.appendChild(document.createTextNode(c));
+      var lastI = -1; qq.forEach(function (q, i) { if (v(c, q, metric) !== null) lastI = i; });
+      var lv = lastI >= 0 ? v(c, qq[lastI], metric) : null;
+      h("span", "x" + (lv !== null && lv < 0 && !opts.noNeg ? " neg" : ""), vFmt(lv), ph);
+      h("div", "pq", lastI < 0 ? "无数据" : lastI < qq.length - 1 ? "最新为 " + ql(qq[lastI]) + "，之后缺数" : ql(qq[lastI]), p);
+      if (opts.note) h("div", "pn", lastI >= 0 ? opts.note(c, qq[lastI]) : "", p);
+      var box = h("div", "chart", null, p); box.tabIndex = 0; box.setAttribute("aria-label", c + " 小图，可用左右方向键逐季查看");
+      panels.push({ c: c, box: box });
+    });
+    panels.forEach(function (pn) {
+      var lo = gLo, hi = gHi;
+      if (!shared) {
+        var own = qq.map(function (q) { return v(pn.c, q, metric); }).filter(function (x) { return x !== null; });
+        lo = Math.min.apply(null, own); hi = Math.max.apply(null, own);
+      }
+      var f = frame(pn.box, qq, lo, hi, yFmt, { height: 150, compactX: true, l: 44, r: 6, nt: 3 });
+      if (shared) {
+        withData.forEach(function (o) { if (o !== pn.c) drawLine(f, qq, o, metric, "var(--ctx)", 1); });
+      }
+      drawLine(f, qq, pn.c, metric, col(pn.c), 2, true);
+      var cross = el("line", { y1: f.m.t, y2: f.m.t + f.ih, "class": "cross", opacity: 0 }, f.svg);
+      var dl = el("g", null, f.svg);
+      pn.f = f; pn.cross = cross; pn.dl = dl;
+    });
+    // 联动悬停：任一小图悬停，其余小图同步显示同一季度
+    function sync(i, src, px, py) {
+      panels.forEach(function (pn) {
+        pn.dl.textContent = "";
+        if (i < 0) { pn.cross.setAttribute("opacity", 0); return; }
+        var cx = pn.f.x(i); pn.cross.setAttribute("x1", cx); pn.cross.setAttribute("x2", cx); pn.cross.setAttribute("opacity", 1);
+        var x = v(pn.c, qq[i], metric);
+        if (x !== null) { var d = el("circle", { cx: cx, cy: pn.f.y(x), r: 4, "stroke-width": 2 }, pn.dl); d.style.fill = col(pn.c); d.style.stroke = "#fff"; }
+      });
+      if (i >= 0 && src) {
+        var q = qq[i];
+        var rows = withData.map(function (c) { return { c: col(c), v: vFmt(v(c, q, metric)), n: who(c, q), raw: v(c, q, metric) }; })
+          .sort(function (a, b) { return (b.raw === null ? -1e18 : b.raw) - (a.raw === null ? -1e18 : a.raw); });
+        showTip(src.box, px, py, ql(q), rows, null, host);
+      }
+    }
+    panels.forEach(function (pn) { hover(pn.box, pn.f, qq.length, function (i, px, py) { sync(i, pn, px, py); }); });
+    return withData;
+  }
+  function drawLine(f, qq, c, metric, stroke, w, marks) {
+    var d = "", pen = false, pts = [];
+    qq.forEach(function (q, i) {
+      var x = v(c, q, metric);
+      if (x === null) { pen = false; pts.push(null); return; }
+      d += (pen ? "L" : "M") + f.x(i).toFixed(1) + "," + f.y(x).toFixed(1); pen = true; pts.push(x);
+    });
+    var p = el("path", { d: d, fill: "none", "stroke-width": w, "stroke-linejoin": "round", "stroke-linecap": "round" }, f.svg);
+    p.style.stroke = stroke;
+    if (!marks) return;
+    pts.forEach(function (x, i) {
+      if (x === null) return;
+      var iso = (i === 0 || pts[i - 1] === null) && (i === pts.length - 1 || pts[i + 1] === null);
+      var last = pts.slice(i + 1).every(function (z) { return z === null; });
+      if (iso || last) { var o = el("circle", { cx: f.x(i), cy: f.y(x), r: 4, "stroke-width": 2 }, f.svg); o.style.fill = stroke; o.style.stroke = "#fff"; }
+    });
+  }
+
+  // ---------- 图 6：热力表 ----------
+  function mix(a, b, t) {
+    var A = [parseInt(a.slice(1, 3), 16), parseInt(a.slice(3, 5), 16), parseInt(a.slice(5, 7), 16)];
+    var B = [parseInt(b.slice(1, 3), 16), parseInt(b.slice(3, 5), 16), parseInt(b.slice(5, 7), 16)];
+    return A.map(function (x, i) { return Math.round(x + (B[i] - x) * t); });
+  }
+  var POS = "#2b5f9e", NEG = "#c65a4b", MID = "#f2f1ee", CAP = 0.15;
+  function heatColor(x) {
+    var t = Math.min(1, Math.abs(x) / CAP);
+    var rgb = mix(MID, x >= 0 ? POS : NEG, Math.pow(t, .8));
+    var lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+    return { bg: "rgb(" + rgb.join(",") + ")", fg: lum < .55 ? "#ffffff" : "#12202f" };
+  }
+  function heat(cos) {
+    var tbl = document.getElementById("heat"); tbl.textContent = "";
+    var qq = qs();
+    var thead = h("thead", null, null, tbl), tr = h("tr", null, null, thead);
+    h("th", "co", "", tr);
+    qq.forEach(function (q) { var th = h("th", null, null, tr); th.appendChild(document.createTextNode(q.slice(2, 4) + q.slice(4))); });
+    var tb = h("tbody", null, null, tbl);
+    cos.forEach(function (c) {
+      var row = h("tr", null, null, tb);
+      var th = h("th", "co", null, row); th.appendChild(document.createTextNode(c));
+      qq.forEach(function (q) {
+        var x = v(c, q, "earn_reaction_vs_qqq"), r = rec(c, q);
+        var td = h("td", x === null ? "na" : null, x === null ? "·" : fPP(x).replace(/\.\d$/, function (m) { return m; }), row);
+        if (x !== null) {
+          var hc = heatColor(x); td.style.background = hc.bg; td.style.color = hc.fg;
+          var rr = Math.round(x * 100); td.textContent = rr === 0 ? "0" : (rr > 0 ? "+" : "") + minus(String(rr));
+          td.title = c + " " + ql(q) + "：" + fPP(x) + " pp" + (r && r.release_date ? "，" + r.release_date + " 发布" : "");
+        }
+      });
+    });
+    var sb = document.getElementById("scalebar");
+    sb.style.background = "linear-gradient(90deg," + heatColor(-CAP).bg + "," + MID + "," + heatColor(CAP).bg + ")";
+  }
+
+  // ---------- 要点 ----------
+  function kpi(p, cls, l, val, s) { var d = h("div", "kpi " + (cls || ""), null, p); h("div", "l", l, d); h("div", "v", val, d); if (s) h("div", "s", s, d); }
+  function sum(cos, q, m) { return cos.reduce(function (s, c) { return s + v(c, q, m); }, 0); }
+  function kpis() {
+    var box = document.getElementById("kpis"); box.textContent = "";
+    var cos = act(), q = Q[state.end], pq = state.end >= 4 ? Q[state.end - 4] : null;
+    var hv = cos.filter(function (c) { return v(c, q, "capex") !== null; });
+    var cap = sum(hv, q, "capex"), yoy = null;
+    if (pq && hv.length && hv.every(function (c) { return v(c, pq, "capex") !== null; })) yoy = cap / sum(hv, pq, "capex") - 1;
+    kpi(box, "hero", ql(q) + " 资本开支合计", hv.length ? fUSD(cap) : "—", (yoy !== null ? "同比 " + (yoy > 0 ? "+" : "") + fPct(yoy) + "，" : "") + hv.length + " 家，现金口径");
+    var fc = cos.filter(function (c) { return v(c, q, "fcf_adj") !== null; }), miss = cos.filter(function (c) { return fc.indexOf(c) < 0; });
+    kpi(box, "", "调整后 FCF 合计", fc.length ? fUSD(sum(fc, q, "fcf_adj")) : "—", fc.length + " 家" + (miss.length ? "，不含 " + miss.join("、") : ""));
+    var b = cos.filter(function (c) { return v(c, q, "capex") !== null && v(c, q, "revenue") !== null; });
+    kpi(box, "", "资本开支占收入", b.length ? fPct(sum(b, q, "capex") / sum(b, q, "revenue")) : "—", b.length + " 家合计");
+    var neg = fc.filter(function (c) { return v(c, q, "fcf_adj") < 0; });
+    kpi(box, "", "调整后 FCF 为负", neg.length + " / " + fc.length, neg.length ? neg.join("、") : "没有");
+  }
+
+  // ---------- 注释 ----------
+  function comp(list) {
+    var idx = list.map(function (q) { return Q.indexOf(q); }), out = [], s = idx[0], p = idx[0];
+    for (var i = 1; i <= idx.length; i++) {
+      if (i < idx.length && idx[i] === p + 1) { p = idx[i]; continue; }
+      out.push(s === p ? Q[s] : Q[s] + " 至 " + Q[p]); if (i < idx.length) { s = p = idx[i]; }
+    }
+    return out.join("、");
+  }
+  function missing(metric, cos) {
+    var parts = [];
+    cos.forEach(function (c) { var m = qs().filter(function (q) { return v(c, q, metric) === null; }); if (m.length) parts.push(c + " " + comp(m)); });
+    return parts.length && false ? parts.join("；") : "";
+  }
+  function offs(cos) { return cos.filter(function (c) { return CO[c].offset; }).map(function (c) { return c + " 财季早 " + Math.abs(CO[c].offset) + " 个月"; }).join("；"); }
+  function nets(cos) { var n = cos.filter(function (c) { return CO[c].basis === "net"; }); return n.length ? n.join("、") + " 为净额口径" : ""; }
+  function foot(id, notes, src) {
+    var f = document.getElementById(id); f.textContent = "";
+    var ns = notes.filter(Boolean);
+    if (ns.length) { var a = h("div", null, null, f); h("b", null, "注：", a); a.appendChild(document.createTextNode(ns.join("。") + "。")); }
+    var b = h("div", null, null, f); h("b", null, "来源：", b); b.appendChild(document.createTextNode(src));
+    // 文字包一层，右侧放署名水印，截图转发时带上出处
+    var txt = h("div", "ftxt", null, null);
+    while (f.firstChild) txt.appendChild(f.firstChild);
+    f.appendChild(txt);
+    h("span", "wm", "@Vespr_x", f);
+  }
+  var SRC_SEC = "各公司 10-Q/10-K 与 8-K 财报新闻稿（SEC EDGAR），Vesper X 整理";
+  var PUB = !!DATA.public;
+  var SRC_PX = PUB ? SRC_SEC : SRC_SEC;
+
+  // ---------- 标题（随数据自动更新的事实句） ----------
+  function setTitle(id, text) { document.getElementById(id).textContent = text; }
+  function titles(cos) {
+    var q = Q[state.end], pq = state.end >= 4 ? Q[state.end - 4] : null;
+    var hv = cos.filter(function (c) { return v(c, q, "capex") !== null; });
+    if (hv.length && pq && hv.every(function (c) { return v(c, pq, "capex") !== null; })) {
+      setTitle("t-capex", ql(q) + " 资本开支合计 " + fUSD(sum(hv, q, "capex")) + "，一年前是 " + fUSD(sum(hv, pq, "capex")));
+    } else setTitle("t-capex", "资本开支");
+    var fc = cos.filter(function (c) { return v(c, q, "fcf_adj") !== null; });
+    var neg = fc.filter(function (c) { return v(c, q, "fcf_adj") < 0; });
+    setTitle("t-fcf", !fc.length ? "调整后自由现金流"
+      : ql(q) + " " + (neg.length ? neg.join("、") + " 调整后自由现金流为负" : "调整后自由现金流都为正"));
+    var cr = cos.filter(function (c) { return v(c, q, "capex_to_rev") !== null; }).sort(function (a, b) { return v(b, q, "capex_to_rev") - v(a, q, "capex_to_rev"); });
+    setTitle("t-cr", cr.length ? ql(q) + " 资本开支占收入最高的是 " + cr[0] + "，" + fPct(v(cr[0], q, "capex_to_rev"), 0) : "资本开支占收入");
+    var yl = cos.filter(function (c) { return v(c, q, "fcf_yield_ttm") !== null; }).sort(function (a, b) { return v(b, q, "fcf_yield_ttm") - v(a, q, "fcf_yield_ttm"); });
+    setTitle("t-yield", yl.length >= 2 ? ql(q) + " FCF 收益率最高 " + yl[0] + " " + fPct(v(yl[0], q, "fcf_yield_ttm")) + "，最低 " + yl[yl.length - 1] + " " + fPct(v(yl[yl.length - 1], q, "fcf_yield_ttm")) : "调整后 FCF 收益率（TTM）");
+  }
+
+  // ---------- 附表 ----------
+  var TM = [
+    ["capex", "资本开支（现金口径）", fUSD], ["capex_adj", "资本开支 + 新增融资租赁", fUSD], ["revenue", "收入", fUSD],
+    ["ocf", "经营现金流", fUSD], ["fcf", "自由现金流（简单口径）", fUSD], ["fcf_adj", "调整后自由现金流", fUSD],
+    ["fcf_adj_ttm", "调整后 FCF（TTM）", fUSD], ["capex_to_rev", "资本开支占收入", fPct], ["fin_lease_principal", "融资租赁本金偿还", fUSD],
+    ["new_fin_lease_rou", "新增融资租赁资产", fUSD], ["leases_not_commenced", "已签未起租租赁承诺", fUSD], ["rpo", "剩余履约义务（RPO）", fUSD],
+    ["rpo_yoy", "RPO 同比", fPct], ["mkt_cap", "季末市值", fUSD], ["fcf_yield_ttm", "调整后 FCF 收益率（TTM）", function (x) { return fPct(x, 2); }],
+    ["earn_reaction_vs_qqq", "财报反应（相对 QQQ，pp）", fPP],
+    ["debt_issued", "发债收到的现金", fUSD], ["debt_repaid", "偿还债务", fUSD], ["cp_net", "商业票据净额", fUSD],
+    ["buybacks", "回购", fUSD], ["dividends", "普通股股息", fUSD], ["cash_and_st_inv", "现金及短期投资", fUSD], ["total_debt", "总债务", fUSD],
+    ["cloud_rev", "云分部收入", fUSD], ["cloud_oi", "云分部经营利润", fUSD], ["cloud_seg_margin", "云分部 margin（ORCL）", fUSD]
+  ];
+  function table(cos) {
+    var sp = TM.filter(function (t) { return t[0] === state.metric; })[0] || TM[0];
+    var tbl = document.getElementById("tbl"); tbl.textContent = "";
+    var tr = h("tr", null, null, h("thead", null, null, tbl)); h("th", null, "日历季度", tr);
+    cos.forEach(function (c) { var th = h("th", null, null, tr); var i = h("i", null, null, th); i.style.background = col(c); th.appendChild(document.createTextNode(c + (CO[c].basis === "net" && /capex|fcf/.test(sp[0]) ? "（净额）" : ""))); });
+    var tb = h("tbody", null, null, tbl);
+    qs().slice().reverse().forEach(function (q) {
+      var row = h("tr", null, null, tb); h("td", null, ql(q), row);
+      cos.forEach(function (c) {
+        var x = v(c, q, sp[0]), r = rec(c, q), td = h("td", x === null ? "na" : null, null, row), lab = sp[2](x);
+        if (x !== null && r && r.filing_url) { var a = h("a", x < 0 ? "neg" : null, lab, td); a.href = r.filing_url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.title = c + " " + (r.accession || "") + (r.period_end ? "，期末 " + r.period_end : ""); }
+        else h("span", x !== null && x < 0 ? "neg" : null, lab, td);
+      });
+    });
+    foot("f-tbl", [(PUB ? "空值不是零；链接为该季度主文件（10-Q/10-K）的 SEC 索引，差分与 TTM 由多份文件计算" : "空值不是零；链接为该季度主文件（10-Q/10-K）的 SEC 索引，差分与 TTM 由多份文件计算"), offs(cos)], sp[0].indexOf("mkt") === 0 || /yield|reaction/.test(sp[0]) ? SRC_PX : SRC_SEC);
+  }
+  function mgmt(cos) {
+    var tbl = document.getElementById("mgmt"); tbl.textContent = "";
+    var qq = qs(), rows = DATA.mgmt.filter(function (r) { return r.topic === "capex_incl_finance_leases" && cos.indexOf(r.company) >= 0 && qq.indexOf(r.quarter) >= 0; });
+    document.getElementById("mgmtBox").style.display = rows.length ? "" : "none";
+    if (!rows.length) return;
+    var tr = h("tr", null, null, h("thead", null, null, tbl));
+    ["公司", "日历季度", "管理层口径", "本表 capex_adj", "原话", "出处"].forEach(function (t) { h("th", null, t, tr); });
+    var tb = h("tbody", null, null, tbl);
+    rows.sort(function (a, b) { return a.company === b.company ? (a.quarter < b.quarter ? 1 : -1) : COS.indexOf(a.company) - COS.indexOf(b.company); });
+    rows.forEach(function (r) {
+      var row = h("tr", null, null, tb);
+      h("td", null, r.company, row); h("td", null, ql(r.quarter), row);
+      var mv = r.value === null ? null : r.unit === "USD_billion" ? r.value * 1000 : r.unit === "USD_m" ? r.value : null;
+      h("td", null, mv !== null ? fUSD(mv) : (r.value === null ? "—" : r.value + " " + (r.unit || "")), row);
+      h("td", null, fUSD(v(r.company, r.quarter, "capex_adj")), row);
+      h("td", "txt", r.statement || "", row);
+      var td = h("td", null, null, row);
+      if (r.url && /^https:\/\//.test(r.url)) { var a = h("a", null, "电话会", td); a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    });
+  }
+
+  // ---------- 渲染 ----------
+  function legend(id, cos) {
+    var b = document.getElementById(id); b.textContent = "";
+    if (cos.length < 2) return;
+    cos.forEach(function (c) { var s = h("span", null, null, b); var i = h("i", null, null, s); i.style.background = col(c); s.appendChild(document.createTextNode(c + (CO[c].basis === "net" ? "（净额）" : ""))); });
+  }
+  // ---------- 第二批：资金与云分部（页面内派生，不回写数据） ----------
+  var SEG_NAME = { AMZN: "AWS", GOOGL: "Google Cloud" };
+  function nz(x) { return x === null || x === undefined || !isFinite(x) ? null : x; }
+  (function deriveRows() {
+    COS.forEach(function (c) {
+      Q.forEach(function (q) {
+        var r = DATA.rows[c] && DATA.rows[c][q]; if (!r) return;
+        var bb = nz(r.buybacks), dv = nz(r.dividends), fa = nz(r.fcf_adj);
+        r._returns = bb !== null && dv !== null ? bb + dv : null;
+        r._fcf_after_ret = fa !== null && r._returns !== null ? fa - r._returns : null;
+        var iss = nz(r.debt_issued), rep = nz(r.debt_repaid), cp = nz(r.cp_net);
+        if (cp === null && CO[c].cp_in_debt) cp = 0;
+        r._net_borrow = iss !== null && rep !== null && cp !== null ? iss - rep + cp : null;
+        var td = nz(r.total_debt), ca = nz(r.cash_and_st_inv);
+        r._net_debt = td !== null && ca !== null ? td - ca : null;
+        var cr = nz(r.cloud_rev), co = nz(r.cloud_oi);
+        r._cloud_margin = cr && co !== null ? co / cr : null;
+      });
+    });
+  })();
+  function fZ(x) { return x === 0 ? "0" : fUSD(x); }
+  function lead(cos, q, m) { return cos.filter(function (c) { return v(c, q, m) !== null; }); }
+
+  function funding(cos) {
+    var q = Q[state.end];
+    var sec = document.getElementById("fig-fund");
+    var any = cos.some(function (c) { return qs().some(function (qq) { return v(c, qq, "_fcf_after_ret") !== null; }); });
+    sec.hidden = !any; if (!any) return;
+    multiples(document.getElementById("m-fund"), "_fcf_after_ret", cos, aUSD, fUSD, true, {
+      note: function (c, lq) {
+        var nb = v(c, lq, "_net_borrow"), eq = v(c, lq, "equity_issued");
+        return (nb === null ? "" : "净借债 " + fZ(nb)) + (eq ? (nb === null ? "" : "，") + "发新股 " + fZ(eq) : "");
+      }
+    });
+    var has = lead(cos, q, "_fcf_after_ret"), neg = has.filter(function (c) { return v(c, q, "_fcf_after_ret") < 0; });
+    var t = "付完回购和分红之后的现金流";
+    if (has.length && !neg.length) t = ql(q) + " 付完回购和分红后，现金流都为正";
+    else if (neg.length) {
+      t = ql(q) + " " + neg.join("、") + " 付完回购和分红后现金流为负";
+      var nbs = lead(neg, q, "_net_borrow");
+      if (nbs.length) t += "，同季净借债 " + fUSD(sum(nbs, q, "_net_borrow"));
+    }
+    setTitle("t-fund", t);
+    var notes = [];
+    if (cos.indexOf("GOOGL") >= 0) notes.push("GOOGL 的商业票据和融资租赁本金含在发债、还债里");
+    notes.push(nets(cos), offs(cos));
+    foot("f-fund", notes, SRC_SEC);
+  }
+
+  function netDebt(cos) {
+    var q = Q[state.end], sec = document.getElementById("fig-debt");
+    var any = cos.some(function (c) { return qs().some(function (qq) { return v(c, qq, "_net_debt") !== null; }); });
+    sec.hidden = !any; if (!any) return;
+    multiples(document.getElementById("m-debt"), "_net_debt", cos, aUSD, fUSD, true, { noNeg: true,
+      note: function (c, lq) { return "债务 " + fUSD(v(c, lq, "total_debt")) + " / 现金 " + fUSD(v(c, lq, "cash_and_st_inv")); }
+    });
+    var has = lead(cos, q, "_net_debt"), nd = has.filter(function (c) { return v(c, q, "_net_debt") > 0; });
+    var t;
+    if (!has.length) t = "净债务";
+    else if (!nd.length) t = ql(q) + " 末，都是净现金";
+    else t = ql(q) + " 末，" + nd.join("、") + " 的债务已超过现金";
+    setTitle("t-debt", t);
+    foot("f-debt", ["债务含一年内到期部分和商业票据，不含租赁；现金含短期投资", offs(cos)], SRC_SEC);
+  }
+
+  function cloud(cos) {
+    var q = Q[state.end], sec = document.getElementById("fig-cloud");
+    var cc = cos.filter(function (c) { return qs().some(function (qq) { return v(c, qq, "_cloud_margin") !== null; }); });
+    sec.hidden = !cc.length; if (!cc.length) return;
+    multiples(document.getElementById("m-cloud"), "_cloud_margin", cc, aPct, function (x) { return fPct(x, 1); }, true, {
+      note: function (c, lq) {
+        var i = Q.indexOf(lq), r0 = v(c, lq, "cloud_rev"), r1 = i >= 4 ? v(c, Q[i - 4], "cloud_rev") : null;
+        return (SEG_NAME[c] || c) + " 收入 " + fUSD(r0) + (r1 ? "，" + (r0 / r1 - 1 > 0 ? "+" : "") + fPct(r0 / r1 - 1, 0) : "");
+      }
+    });
+    var has = lead(cc, q, "_cloud_margin").sort(function (a, b) { return v(b, q, "_cloud_margin") - v(a, q, "_cloud_margin"); });
+    setTitle("t-cloud", has.length ? ql(q) + " 云业务经营利润率：" + has.map(function (c) { return (SEG_NAME[c] || c) + " " + fPct(v(c, q, "_cloud_margin"), 1); }).join("，") : "云业务经营利润率");
+    var skip = ["MSFT", "ORCL"].filter(function (c) { return cos.indexOf(c) >= 0; });
+    var out = [skip.length ? skip.join("、") + " 分部口径不可比，暂不放" : ""];
+    foot("f-cloud", out, SRC_SEC);
+  }
+
+  function render() {
+    var cos = act();
+    kpis(); titles(cos);
+    legend("lg-capex", cos);
+    stacked(document.getElementById("c-capex"), "capex", cos);
+    foot("f-capex", [nets(cos), offs(cos), missing("capex", cos)], SRC_SEC);
+
+    hiddenCapex(cos);
+    guidance(cos);
+
+    multiples(document.getElementById("m-fcf"), "fcf_adj", cos, aUSD, fUSD, true);
+    foot("f-fcf", [nets(cos), offs(cos), missing("fcf_adj", cos)], SRC_SEC);
+    funding(cos);
+    netDebt(cos);
+
+    multiples(document.getElementById("m-cr"), "capex_to_rev", cos, aPct, function (x) { return fPct(x, 0); }, true);
+    foot("f-cr", [nets(cos), offs(cos), missing("capex_to_rev", cos)], SRC_SEC);
+
+    multiples(document.getElementById("m-yield"), "fcf_yield_ttm", cos, aPct, function (x) { return fPct(x, 1); }, true);
+    foot("f-yield", [offs(cos), missing("fcf_yield_ttm", cos)], SRC_PX);
+
+    var drawn = multiples(document.getElementById("m-rpo"), "rpo_yoy", cos, aPct, function (x) { return fPct(x, 0); }, false);
+    var skipped = cos.filter(function (c) { return drawn.indexOf(c) < 0; });
+    foot("f-rpo", [skipped.length ? skipped.join("、") + " 不画" : "", offs(drawn)], SRC_SEC);
+
+    cloud(cos);
+
+    heat(cos);
+    foot("f-react", ["盘后发布取次日收盘", offs(cos)], SRC_PX);
+
+    table(cos); mgmt(cos);
+    numberExhibits();
+  }
+
+
+  // ---------- 看不见的资本开支 ----------
+  function hiddenCapex(cos) {
+    var sec = document.getElementById("fig-hidden");
+    var any = cos.some(function (c) { return Q.some(function (q) { return v(c, q, "leases_not_commenced") !== null; }); });
+    sec.hidden = !any;
+    if (!any) return;
+    function ratio(c, q) { var a = v(c, q, "leases_not_commenced"), b = v(c, q, "capex_ttm"); return a !== null && b ? a / b : null; }
+    multiples(document.getElementById("m-hidden"), "leases_not_commenced", cos, aUSD, fUSD, true, {
+      note: function (c, q) { var r = ratio(c, q); return r === null ? "" : "过去四季资本开支的 " + r.toFixed(1) + " 倍"; }
+    });
+    var q = Q[state.end];
+    var both = cos.filter(function (c) { return ratio(c, q) !== null; });
+    if (both.length) {
+      var L = sum(both, q, "leases_not_commenced"), C = sum(both, q, "capex_ttm");
+      var lead = both.slice().sort(function (a, b) { return ratio(b, q) - ratio(a, q); })[0];
+      setTitle("t-hidden", ql(q) + " 末已签约未起租的租赁 " + fUSD(L) + "，是过去四季资本开支的 " + (L / C).toFixed(1) + " 倍");
+      void lead;
+    } else setTitle("t-hidden", "已签约、还没起租的租赁承诺");
+    foot("f-hidden", ["未来多年的付款总额，和资本开支不是同一种量，倍数只作规模参照", offs(cos)], SRC_SEC);
+  }
+
+  // ---------- 指引与实际（数据由 DATA.guidance 提供，没有就整块隐藏） ----------
+  // 同一公司、同一期间、同一口径的多次指引合成一行：显示最新一次，之前的写在下面一行小字里
+  function truthy(x) { return x === true || x === 1 || x === "1" || x === "true" || x === "TRUE"; }
+  function guideText(r) {
+    var lo = r.guide_low, hi = r.guide_high, hasLo = lo !== null && lo !== undefined, hasHi = hi !== null && hi !== undefined;
+    if (!hasLo && !hasHi) return "—";
+    if (!hasLo) return (truthy(r.high_strict) ? "低于 " : "不超过 ") + fUSD(hi);
+    if (!hasHi) return (truthy(r.low_strict) ? "超过 " : "不低于 ") + fUSD(lo);
+    return hi === lo ? "约 " + fUSD(lo) : fUSD(lo) + " 至 " + fUSD(hi);
+  }
+  var BASIS_ORDER = ["capex_cash", "capex_net_proceeds", "capex_incl_finance_leases", "capex_incl_fl_principal", "capex_net_customer_funding", "other"];
+  var SRC_LABEL = { press_release: "新闻稿", sec_filing: "SEC 文件", ir_transcript: "电话会纪要", webcast: "电话会回放" };
+  function guidance(cos) {
+    var sec = document.getElementById("fig-guide");
+    var rows = (DATA.guidance || []).filter(function (r) { return cos.indexOf(r.company) >= 0; });
+    sec.hidden = !rows.length;
+    if (!rows.length) return;
+    var groups = {}, order = [];
+    rows.forEach(function (r) {
+      var k = r.company + "|" + r.period + "|" + r.basis;
+      if (!groups[k]) { groups[k] = []; order.push(k); }
+      groups[k].push(r);
+    });
+    var list = order.map(function (k) {
+      var g = groups[k].slice().sort(function (a, b) { return (a.date || "") < (b.date || "") ? -1 : 1; });
+      return { last: g[g.length - 1], prev: g.slice(0, -1) };
+    }).sort(function (a, b) {
+      var A = a.last, B = b.last;
+      if (A.company !== B.company) return COS.indexOf(A.company) - COS.indexOf(B.company);
+      if ((A.period || "") !== (B.period || "")) return (A.date || "") < (B.date || "") ? 1 : -1;
+      return BASIS_ORDER.indexOf(A.basis) - BASIS_ORDER.indexOf(B.basis);
+    });
+    var tbl = document.getElementById("guide"); tbl.textContent = "";
+    var tr = h("tr", null, null, h("thead", null, null, tbl));
+    ["公司", "期间", "口径", "最新指引", "实际", "差额", "出处"].forEach(function (t) { h("th", null, t, tr); });
+    var tb = h("tbody", null, null, tbl), anyMgmt = false, anyHist = false;
+    list.forEach(function (g) {
+      var r = g.last, row = h("tr", null, null, tb);
+      h("td", null, r.company, row);
+      h("td", null, r.period_label || r.period || "", row);
+      h("td", null, r.basis_label || r.basis || "", row);
+      var gc = h("td", "guide-cell", null, row);
+      h("div", "gv", guideText(r), gc);
+      if (r.date) h("div", "gd", r.date + " 给出", gc);
+      if (g.prev.length) {
+        anyHist = true;
+        var hd = h("div", "gd", "此前 ", gc);
+        g.prev.slice().reverse().forEach(function (p, i) {
+          if (i) hd.appendChild(document.createTextNode("，"));
+          h("span", "nw", guideText(p) + (p.date ? "（" + p.date + "）" : ""), hd);
+        });
+      }
+      var act = r.actual === undefined ? null : r.actual, mg = r.actual_source === "mgmt";
+      if (mg && act !== null) anyMgmt = true;
+      h("td", null, act === null ? "—" : fUSD(act) + (mg ? " *" : ""), row);
+      var lo = r.guide_low, hi = r.guide_high, gap = null, gtxt = "—", hasL = lo !== null && lo !== undefined, hasH = hi !== null && hi !== undefined, tip = "";
+      if (act !== null && hasL && hasH) { gap = act - (lo + hi) / 2; gtxt = (gap > 0 ? "+" : "") + fUSD(gap); tip = "实际减最新指引" + (lo !== hi ? "的区间中值" : ""); }
+      else if (act !== null && hasL) { var bl = act - lo, missL = truthy(r.low_strict) ? bl <= 0 : bl < 0; gtxt = missL ? "低于下限 " + fUSD(-bl) : "达到"; if (missL) gap = bl; tip = "只给了下限，比较实际和下限"; }
+      else if (act !== null && hasH) { var bh = act - hi, overH = truthy(r.high_strict) ? bh >= 0 : bh > 0; gtxt = overH ? "超出上限 " + fUSD(bh) : "未超"; if (overH) gap = bh; tip = "只给了上限，比较实际和上限"; }
+      var gt = h("td", "guide-gap" + (gap !== null && gap > 0 ? " over" : ""), gtxt, row);
+      if (tip) gt.title = tip;
+      var td = h("td", null, null, row);
+      if (r.url && /^https:\/\//.test(r.url)) {
+        var a = h("a", null, SRC_LABEL[r.source_type] || r.source_label || "原文", td);
+        a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer"; if (r.statement) a.title = r.statement;
+      }
+    });
+    foot("f-guide", [
+      "差额按最新指引的区间中值算" + (anyMgmt ? "；* 为公司自己公布的同口径实际数" : "")
+    ], "各公司财报电话会、8-K 财报新闻稿与 10-Q/10-K（SEC EDGAR），Vesper X 整理");
+    void anyHist;
+  }
+
+  // ---------- 本季要点（文字由 DATA.highlights 提供） ----------
+  function highlights() {
+    var hl = DATA.highlights, sec = document.getElementById("highlights");
+    var items = hl && Array.isArray(hl.items) ? hl.items.filter(function (t) { return t && String(t).trim(); }) : [];
+    sec.hidden = !items.length;
+    if (!items.length) return;
+    document.getElementById("hl-label").textContent = "本季要点" + (hl.quarter ? " · " + ql(hl.quarter) : "");
+    var ol = document.getElementById("hl-list"); ol.textContent = "";
+    items.forEach(function (t) { h("li", null, String(t), ol); });
+    document.getElementById("hl-by").textContent = "@Vespr_x 的个人观点" + (hl.updated ? "，写于 " + hl.updated : "") + "；不构成投资建议。";
+  }
+
+  // ---------- 编号、分享、下载 ----------
+  function numberExhibits() {
+    var n = 0;
+    Array.prototype.forEach.call(document.querySelectorAll(".exhibit:not(.appendix)"), function (sec) {
+      var lab = sec.querySelector(".ex-num");
+      if (sec.hidden) return;
+      n += 1; lab.textContent = "图 " + n;
+    });
+  }
+  var toastEl = document.getElementById("toast"), toastT;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 1800); }
+  function pageUrl(id) { return location.href.split("#")[0] + "#" + id; }
+  function initTools() {
+    Array.prototype.forEach.call(document.querySelectorAll(".exhibit[data-share]"), function (sec) {
+      var bar = sec.querySelector(".tools"); bar.textContent = "";
+      var dl = h("button", null, "下载图片", bar); dl.type = "button";
+      dl.addEventListener("click", function () { exportPng(sec); });
+      var sh = h("button", null, "分享到 X", bar); sh.type = "button";
+      sh.addEventListener("click", function () {
+        var t = sec.querySelector(".ex-title").textContent;
+        var u = "https://x.com/intent/post?text=" + encodeURIComponent(t) + "&url=" + encodeURIComponent(pageUrl(sec.id)) + "&via=Vespr_x";
+        window.open(u, "_blank", "noopener,noreferrer");
+      });
+      var cp = h("button", null, "复制链接", bar); cp.type = "button";
+      cp.addEventListener("click", function () {
+        var u = pageUrl(sec.id);
+        try { navigator.clipboard.writeText(u).then(function () { toast("链接已复制"); }, function () { prompt("复制这个链接", u); }); }
+        catch (e) { prompt("复制这个链接", u); }
+      });
+    });
+  }
+
+  // 把一个图块画成 PNG：方框和文字按页面位置重画，SVG 内联样式后栅格化，右下角保留署名
+  var SVG_PROPS = ["fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "opacity", "font-size", "font-family", "font-weight", "shape-rendering"];
+  function svgToImage(svg) {
+    var clone = svg.cloneNode(true);
+    var src = svg.querySelectorAll("*"), dst = clone.querySelectorAll("*");
+    for (var i = 0; i < src.length; i++) {
+      var cs = getComputedStyle(src[i]), st = "";
+      SVG_PROPS.forEach(function (k) { var val = cs.getPropertyValue(k); if (val) st += k + ":" + val + ";"; });
+      dst[i].setAttribute("style", st);
+    }
+    clone.setAttribute("xmlns", NS);
+    var r = svg.getBoundingClientRect();
+    clone.setAttribute("width", r.width); clone.setAttribute("height", r.height);
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+    return new Promise(function (res) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = url; });
+  }
+  function exportPng(sec) {
+    sec.classList.add("exporting");
+    var box = sec.getBoundingClientRect(), pad = 28, scale = 2, ops = [], jobs = [];
+    function visible(el) { var cs = getComputedStyle(el); return cs.display !== "none" && cs.visibility !== "hidden" && !el.hidden; }
+    function walk(el) {
+      if (!visible(el)) return;
+      if (el.tagName && el.tagName.toLowerCase() === "svg") {
+        var r = el.getBoundingClientRect(), slot = { type: "img", r: r, img: null };
+        ops.push(slot); jobs.push(svgToImage(el).then(function (im) { slot.img = im; })); return;
+      }
+      var cs = getComputedStyle(el), r2 = el.getBoundingClientRect();
+      var bg = cs.backgroundColor;
+      if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent" && r2.width && r2.height) ops.push({ type: "rect", r: r2, color: bg, radius: parseFloat(cs.borderTopLeftRadius) || 0 });
+      if (cs.backgroundImage && cs.backgroundImage.indexOf("linear-gradient") === 0) ops.push({ type: "grad", r: r2, css: cs.backgroundImage });
+      ["Top", "Bottom"].forEach(function (side) {
+        var w = parseFloat(cs["border" + side + "Width"]);
+        if (w > 0 && cs["border" + side + "Style"] !== "none") ops.push({ type: "line", r: r2, side: side, w: w, color: cs["border" + side + "Color"] });
+      });
+      Array.prototype.forEach.call(el.childNodes, function (n) {
+        if (n.nodeType === 3 && n.textContent.trim()) {
+          var font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+          var upper = cs.textTransform === "uppercase", rg = document.createRange(), t = n.textContent;
+          for (var i = 0; i < t.length; i++) {
+            if (!t[i].trim()) continue;
+            rg.setStart(n, i); rg.setEnd(n, i + 1);
+            var cr = rg.getClientRects()[0]; if (!cr) continue;
+            ops.push({ type: "text", ch: upper ? t[i].toUpperCase() : t[i], x: cr.left, y: cr.top + cr.height / 2, font: font, color: cs.color });
+          }
+        } else if (n.nodeType === 1) walk(n);
+      });
+    }
+    walk(sec);
+    Promise.all(jobs).then(function () {
+      var cv = document.createElement("canvas");
+      cv.width = Math.ceil((box.width + pad * 2) * scale); cv.height = Math.ceil((box.height + pad * 2 + 14) * scale);
+      var ctx = cv.getContext("2d");
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, box.width + pad * 2, box.height + pad * 2 + 14);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--rule").trim() || "#0f2742";
+      ctx.fillRect(0, 0, box.width + pad * 2, 4);
+      ctx.translate(pad - box.left, pad - box.top);
+      ctx.textBaseline = "middle";
+      ops.forEach(function (o) {
+        if (o.type === "rect") {
+          ctx.fillStyle = o.color;
+          if (o.radius && ctx.roundRect) { ctx.beginPath(); ctx.roundRect(o.r.left, o.r.top, o.r.width, o.r.height, Math.min(o.radius, o.r.height / 2)); ctx.fill(); }
+          else ctx.fillRect(o.r.left, o.r.top, o.r.width, o.r.height);
+        } else if (o.type === "grad") {
+          var stops = o.css.match(/rgb[a]?\([^)]+\)|#[0-9a-f]{3,6}/gi) || [];
+          var g = ctx.createLinearGradient(o.r.left, 0, o.r.right, 0);
+          stops.forEach(function (c, i) { g.addColorStop(stops.length > 1 ? i / (stops.length - 1) : 0, c); });
+          ctx.fillStyle = g; ctx.fillRect(o.r.left, o.r.top, o.r.width, o.r.height);
+        } else if (o.type === "line") {
+          ctx.fillStyle = o.color;
+          ctx.fillRect(o.r.left, o.side === "Top" ? o.r.top : o.r.bottom - o.w, o.r.width, o.w);
+        } else if (o.type === "img" && o.img) {
+          ctx.drawImage(o.img, o.r.left, o.r.top, o.r.width, o.r.height);
+        } else if (o.type === "text") {
+          ctx.font = o.font; ctx.fillStyle = o.color; ctx.fillText(o.ch, o.x, o.y);
+        }
+      });
+      sec.classList.remove("exporting");
+      var name = "vesprx-" + (sec.dataset.share || "chart") + "-" + (Q[state.end] || "") + ".png";
+      cv.toBlob(function (blob) {
+        if (!blob) { toast("这个浏览器不支持导出，请改用截图"); return; }
+        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        toast("已下载 " + name);
+      }, "image/png");
+    }).catch(function () { sec.classList.remove("exporting"); toast("导出失败，请改用截图"); });
+  }
+
+  // ---------- 控件 ----------
+  var tg = document.getElementById("toggles");
+  COS.forEach(function (c) {
+    var b = h("button", "tog", null, tg); b.type = "button"; b.dataset.co = c;
+    var sw = h("i", "sw", null, b); sw.style.background = col(c);
+    b.appendChild(document.createTextNode(c));
+    b.addEventListener("click", function () { if (state.cos.has(c)) { if (state.cos.size > 1) state.cos.delete(c); } else state.cos.add(c); syncTog(); save(); render(); });
+  });
+  function syncTog() { Array.prototype.forEach.call(tg.children, function (b) { b.setAttribute("aria-pressed", state.cos.has(b.dataset.co) ? "true" : "false"); }); }
+  var s = document.getElementById("qStart"), e = document.getElementById("qEnd");
+  Q.forEach(function (q, i) { h("option", null, ql(q), s).value = i; h("option", null, ql(q), e).value = i; });
+  s.value = state.start; e.value = state.end;
+  s.addEventListener("change", function () { state.start = Math.min(+s.value, state.end); s.value = state.start; render(); });
+  e.addEventListener("change", function () { state.end = Math.max(+e.value, state.start); e.value = state.end; render(); });
+  document.getElementById("reset").addEventListener("click", function () { state.start = 0; state.end = Q.length - 1; state.cos = new Set(COS); s.value = 0; e.value = Q.length - 1; syncTog(); save(); render(); });
+  var ms = document.getElementById("metricSel");
+  TM.forEach(function (t) { h("option", null, t[1], ms).value = t[0]; });
+  ms.value = state.metric;
+  ms.addEventListener("change", function () { state.metric = ms.value; table(act()); });
+  syncTog();
+
+  document.getElementById("dek").textContent = COS.join("、") + " 的资本开支、自由现金流、订单与估值，按日历季度对齐，" + ql(Q[0]) + " 至 " + ql(Q[Q.length - 1]) + "。";
+  var side = document.getElementById("side");
+  [["SEC 取数截至", DATA.data_as_of], ["股价数据截至", DATA.price_as_of]].forEach(function (p) {
+    if (!p[1]) return; var d = h("div", null, p[0] + " ", side); h("b", null, p[1], d);
+  });
+  document.getElementById("colo").textContent = "数据来源：各公司 10-Q/10-K 与 8-K 财报新闻稿（SEC EDGAR）" + "" + "；管理层口径来自电话会。数字以 SEC 原文为准。";
+  if (PUB) {
+    document.getElementById("note-src").textContent = "财务数字以 SEC 原文为准；附表中的数字可点开对应季度的 SEC 文件，差分与 TTM 由多份文件计算。";
+    document.getElementById("note-px").textContent = "市值为季末收盘价 × SEC 文件封面各类股数。";
+  }
+
+  // ---------- 分享卡片（?og=1） ----------
+  function ogCard() {
+    document.body.classList.add("og-mode");
+    var q = Q[Q.length - 1], cos = COS.filter(function (c) { return v(c, q, "capex") !== null; });
+    var tot = sum(cos, q, "capex"), pq = Q.length > 4 ? Q[Q.length - 5] : null;
+    document.getElementById("og-n").textContent = fUSD(tot);
+    var yo = pq && cos.every(function (c) { return v(c, pq, "capex") !== null; }) ? tot / sum(cos, pq, "capex") - 1 : null;
+    document.getElementById("og-l").textContent = ql(q) + " " + cos.length + " 家资本开支合计" + (yo !== null ? "，同比 " + (yo > 0 ? "+" : "") + fPct(yo) : "");
+    document.getElementById("og-d").textContent = COS.join(" · ") + "　|　资本开支、自由现金流、订单与估值，每季财报后更新";
+    var box = document.getElementById("og-c"), W = box.clientWidth || 560, H = box.clientHeight || 230, n = Q.length, gap = 6;
+    var tots = Q.map(function (qq) { return COS.reduce(function (s, c) { var x = v(c, qq, "capex"); return s + (x || 0); }, 0); });
+    var mx = Math.max.apply(null, tots) || 1, bw = (W - gap * (n - 1)) / n;
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    Q.forEach(function (qq, i) {
+      var y = H;
+      COS.forEach(function (c) {
+        var x = v(c, qq, "capex"); if (!x) return;
+        var hh = x / mx * (H - 4), r = document.createElementNS(svg.namespaceURI, "rect");
+        r.setAttribute("x", i * (bw + gap)); r.setAttribute("y", y - hh); r.setAttribute("width", bw); r.setAttribute("height", Math.max(hh - 1.5, 0));
+        r.setAttribute("fill", getComputedStyle(document.documentElement).getPropertyValue("--c-" + c).trim() || "#888");
+        svg.appendChild(r); y -= hh;
+      });
+    });
+    box.appendChild(svg);
+  }
+  if (/[?&]og=1\b/.test(location.search)) { ogCard(); return; }
+
+  highlights();
+  initTools();
+  render();
+  if (location.hash) { var tgt = document.getElementById(location.hash.slice(1)); if (tgt) setTimeout(function () { tgt.scrollIntoView(); }, 50); }
+  var rt; addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(render, 150); });
+})();
+</script>
+</body>
+</html>
